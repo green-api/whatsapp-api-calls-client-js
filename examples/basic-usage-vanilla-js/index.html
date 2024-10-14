@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <section>
+      <p>Initialization</p>
+      <input id="idInstance" placeholder="instance id">
+      <input id="apiTokenInstance" placeholder="instance api token">
+      <button id="connectButton">connect</button>
+      <button id="disconnectButton" disabled>disconnect</button>
+    </section>
+
+    <section style="margin-top: 16px;">
+      <p>Outgoing call</p>
+      <input id="phoneNumber" placeholder="phone number" disabled>
+      <button id="startCallButton" disabled>start call</button>
+    </section>
+
+    <section>
+      <p>Current call</p>
+      <button id="endCallButton" disabled>end call</button>
+    </section>
+
+    <section style="margin-top: 16px;">
+      <audio id="remoteAudio" autoplay playsinline muted="false" style="filter: blur(30px);"></audio>
+    </section>
+
+    <div id="incoming-call-portal">
+      <section class="incoming-call-modal">
+        <section>
+          Incoming call: <span id="incoming-call-phone">79836200181</span>
+        </section>
+        <sectio>
+          <button class="incoming-call-reject" id="rejectCallButton">reject</button>
+          <button class="incoming-call-accept" id="acceptCallButton">accept</button>
+        </sectio>
+      </section>
+    </div>
+
+    <script type="module" src="/index.js"></script>
+  </body>
+</html>

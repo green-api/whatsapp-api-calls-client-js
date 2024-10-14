@@ -1,0 +1,66 @@
+#incoming-call-portal {
+
+    top: 0;
+    left: 50%;
+    right: 50%;
+    position: absolute;
+
+    width: fit-content;
+    height: fit-content;
+
+    display: none;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.incoming-call-modal {
+    width: 300px;
+    height: 100px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+
+    background: white;
+    box-shadow: 0 0 10px #000000;
+}
+
+.incoming-call-reject {
+    border: none;
+    background: none;
+
+    width: 100px;
+    height: 30px;
+
+    border-radius: 10px;
+
+    color: #e8e8e8;
+    background: #c53c3c;
+}
+
+.incoming-call-reject:hover {
+    cursor: pointer;
+    color: white;
+    background: #e34242;
+}
+
+.incoming-call-accept {
+    border: none;
+    background: none;
+
+    width: 100px;
+    height: 30px;
+
+    border-radius: 10px;
+
+    color: #e8e8e8;
+    background: #11911d;
+}
+
+.incoming-call-accept:hover {
+    cursor: pointer;
+    color: white;
+    background: #11a41e;
+}

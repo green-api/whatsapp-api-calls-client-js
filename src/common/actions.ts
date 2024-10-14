@@ -1,0 +1,17 @@
+export enum Actions {
+  JOIN = 'join',
+  LEAVE = 'leave',
+  ADD_PEER = 'add-peer',
+  REMOVE_PEER = 'remove-peer',
+  RELAY_SDP = 'relay-sdp',
+  RELAY_ICE = 'relay-ice',
+  ICE_CANDIDATE = 'ice-candidate',
+  SESSION_DESCRIPTION = 'session-description',
+  INCOMING_CALL = 'incoming-call',
+  INCOMING_CALL_ANSWER = 'incoming-call-answer',
+  START_INCOMING_CALL = 'start-incoming-call',
+  END_CALL = 'end-call',
+  CALL_STATE = 'call-state',
+  LOCAL_STREAM_READY = 'local-stream-ready',
+  REMOTE_STREAM_READY = 'remote-stream-ready',
+}
