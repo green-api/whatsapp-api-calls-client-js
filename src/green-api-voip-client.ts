@@ -1,4 +1,3 @@
-import freeice from 'freeice';
 import { io } from 'socket.io-client';
 
 import { call } from './utils';
@@ -54,6 +53,15 @@ export class GreenApiVoipClient extends EventTarget {
 
   public constructor() {
     super();
+
+    const iceServers = JSON.parse(
+    import.meta.env.VITE_RTC_ICE_SERVERS
+    .toString()
+    .replace(/\n/g, '')
+    .replace(/\s/g, ''),
+    )
+
+    console.log(iceServers)
 
     let resolveCallback: (value: void | PromiseLike<void>) => void;
 
@@ -133,15 +141,17 @@ export class GreenApiVoipClient extends EventTarget {
       return;
     }
 
+    const iceServers = JSON.parse(
+      import.meta.env.VITE_RTC_ICE_SERVERS
+        .toString()
+        .replace(/\n/g, '')
+        .replace(/\s/g, ''),
+    )
+
+    console.log(iceServers)
+
     this.peerConnections[peerID] = new RTCPeerConnection({
-      iceServers: [
-        ...freeice(),
-        {
-          urls: ["turn:10.128.0.98:3478?transport=udp", "turn:10.128.0.98:3478?transport=tcp"],
-          username: "slonway",
-          credential: "123456789"
-        }
-      ],
+      iceServers: iceServers,
     });
 
     this.peerConnections[peerID].addEventListener('icecandidate', (event) => {
