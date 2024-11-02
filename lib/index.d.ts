@@ -1,3 +1,5 @@
+import { Socket } from 'socket.io-client';
+
 declare interface CallActiveTime {
     sec: number;
     msec: number;
@@ -81,6 +83,9 @@ export declare class GreenApiVoipClient extends EventTarget {
     private options;
     private incomingCallTimeout;
     private call;
+    socketConnected: boolean;
+    socketDisconnectReason: Socket.DisconnectReason | null;
+    socketDisconnectDetails: unknown;
     constructor();
     /**
      * Method destroys connection with signaling socket server.

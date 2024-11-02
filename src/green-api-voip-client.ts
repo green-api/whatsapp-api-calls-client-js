@@ -1,6 +1,9 @@
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 
+import { EndCallReasonEnum } from './common/end-call-reason.enum.ts';
 import { call } from './utils';
+import { timeout } from './utils/timeout.ts';
+import { Call } from 'call.ts';
 import {
   Actions,
   AddPeerPayload,
@@ -12,9 +15,6 @@ import {
   RemovePeerPayload,
   SessionDescriptionPayload,
 } from 'common';
-import {timeout} from "./utils/timeout.ts";
-import {EndCallReasonEnum} from "./common/end-call-reason.enum.ts";
-import { Call } from 'call.ts';
 
 export interface GreenApiVoipClient extends EventTarget {
   addEventListener<K extends keyof GreenApiVoipClientEventMap>(
@@ -51,17 +51,18 @@ export class GreenApiVoipClient extends EventTarget {
   private incomingCallTimeout: ReturnType<typeof setTimeout> | null = null;
   private call: Call | null = null;
 
+  public socketConnected: boolean = false;
+  public socketDisconnectReason: Socket.DisconnectReason | null = null;
+  public socketDisconnectDetails: unknown;
+
   public constructor() {
     super();
 
     const iceServers = JSON.parse(
-    import.meta.env.VITE_RTC_ICE_SERVERS
-    .toString()
-    .replace(/\n/g, '')
-    .replace(/\s/g, ''),
-    )
+      import.meta.env.VITE_RTC_ICE_SERVERS.toString().replace(/\n/g, '').replace(/\s/g, '')
+    );
 
-    console.log(iceServers)
+    console.log(iceServers);
 
     let resolveCallback: (value: void | PromiseLike<void>) => void;
 
@@ -83,6 +84,19 @@ export class GreenApiVoipClient extends EventTarget {
       console.error(err);
       throw err;
     });
+
+    this.socket.on('disconnect', (reason, details) => {
+      this.socketDisconnectReason = reason;
+      this.socketDisconnectDetails = details;
+
+      console.log(
+        `socket status connected: ${this.socketConnected}`,
+        `reason: ${reason}`,
+        `details: ${details}`
+      );
+    });
+
+    this.socketConnected = this.socket.connected;
 
     this.socket.on(Actions.ADD_PEER, this.onNewPeer);
     this.socket.on(Actions.REMOVE_PEER, this.onRemovePeer);
@@ -142,13 +156,10 @@ export class GreenApiVoipClient extends EventTarget {
     }
 
     const iceServers = JSON.parse(
-      import.meta.env.VITE_RTC_ICE_SERVERS
-        .toString()
-        .replace(/\n/g, '')
-        .replace(/\s/g, ''),
-    )
+      import.meta.env.VITE_RTC_ICE_SERVERS.toString().replace(/\n/g, '').replace(/\s/g, '')
+    );
 
-    console.log(iceServers)
+    console.log(iceServers);
 
     this.peerConnections[peerID] = new RTCPeerConnection({
       iceServers: iceServers,
@@ -221,9 +232,10 @@ export class GreenApiVoipClient extends EventTarget {
   private onIncomingCall = (payload: IncomingCallPayload) => {
     this.incomingCallTimeout = setTimeout(() => {
       this.incomingCallTimeout = null;
-      this.dispatchEvent(new CustomEvent(Actions.END_CALL, { detail: { type: EndCallReasonEnum.TIMEOUT } }));
-
-    }, payload.timeout * 1000)
+      this.dispatchEvent(
+        new CustomEvent(Actions.END_CALL, { detail: { type: EndCallReasonEnum.TIMEOUT } })
+      );
+    }, payload.timeout * 1000);
 
     this.call = new Call({ id: payload.info.callId });
     this.dispatchEvent(new CustomEvent(Actions.INCOMING_CALL, { detail: payload }));
@@ -237,7 +249,11 @@ export class GreenApiVoipClient extends EventTarget {
     this.clearIncomingCallTimeout();
     this.socket.emit(Actions.LEAVE, { callID: this.options!.idInstance });
     this.call = null;
-    this.dispatchEvent(new CustomEvent(Actions.END_CALL, { detail: { type: EndCallReasonEnum.REMOTE, payload: payload } }));
+    this.dispatchEvent(
+      new CustomEvent(Actions.END_CALL, {
+        detail: { type: EndCallReasonEnum.REMOTE, payload: payload },
+      })
+    );
   };
   //#endregion
 
@@ -250,7 +266,7 @@ export class GreenApiVoipClient extends EventTarget {
     }
 
     if (this.call !== null) {
-      throw new Error("Already in call");
+      throw new Error('Already in call');
     }
 
     try {
@@ -271,11 +287,10 @@ export class GreenApiVoipClient extends EventTarget {
     const response = await call(phoneNumber, this.options);
 
     if (response.status === 200) {
-      const {callId} = await response.json();
+      const { callId } = await response.json();
 
       this.call = new Call({ id: callId });
-    }
-    else {
+    } else {
       throw new Error('Server error');
     }
 
@@ -285,7 +300,7 @@ export class GreenApiVoipClient extends EventTarget {
 
     if (!ack) {
       this.call = null;
-      throw new Error('signaling server error')
+      throw new Error('signaling server error');
     }
   }
 
@@ -298,11 +313,11 @@ export class GreenApiVoipClient extends EventTarget {
     }
 
     if (this.call === null) {
-      throw new Error("Not in call");
+      throw new Error('Not in call');
     }
 
     if (this.incomingCallTimeout === null) {
-      throw new Error("Incoming call timeout");
+      throw new Error('Incoming call timeout');
     }
 
     this.clearIncomingCallTimeout();
@@ -326,14 +341,16 @@ export class GreenApiVoipClient extends EventTarget {
    */
   public async rejectCall() {
     if (this.call === null) {
-      throw new Error("Not in call");
+      throw new Error('Not in call');
     }
 
     if (this.incomingCallTimeout === null) {
-      throw new Error("Incoming call timeout");
+      throw new Error('Incoming call timeout');
     }
 
-    this.dispatchEvent(new CustomEvent(Actions.END_CALL, { detail: { type: EndCallReasonEnum.REJECTED } }));
+    this.dispatchEvent(
+      new CustomEvent(Actions.END_CALL, { detail: { type: EndCallReasonEnum.REJECTED } })
+    );
     this.socket.emit(Actions.INCOMING_CALL_ANSWER, { reject: true });
   }
 
@@ -342,11 +359,11 @@ export class GreenApiVoipClient extends EventTarget {
    */
   public async endCall(): Promise<boolean> {
     if (this.call === null) {
-      throw new Error("Not in call");
+      throw new Error('Not in call');
     }
 
     if (this.incomingCallTimeout !== null) {
-      throw new Error("Incoming call");
+      throw new Error('Incoming call');
     }
 
     try {
@@ -363,13 +380,14 @@ export class GreenApiVoipClient extends EventTarget {
 
       if (ack) {
         this.call = null;
-        this.dispatchEvent(new CustomEvent(Actions.END_CALL, { detail: { type: EndCallReasonEnum.SELF } }));
+        this.dispatchEvent(
+          new CustomEvent(Actions.END_CALL, { detail: { type: EndCallReasonEnum.SELF } })
+        );
         return true;
       }
 
       return false;
-    }
-    catch (e) {
+    } catch (e) {
       return false;
     }
   }
