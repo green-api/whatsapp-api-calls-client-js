@@ -1,0 +1,22 @@
+.logo-wrapper {
+  display: flex;
+  padding: 15px 0;
+}
+
+.logo {
+  display: inline-block;
+  padding: 7px 15px;
+  transition: .5s background-color;
+  overflow: hidden;
+  white-space: nowrap;
+  margin: 0 auto;
+
+  img {
+    max-width: 60px;
+  }
+
+  &:hover {
+    background: #f0f2f5;
+  }
+
+}
