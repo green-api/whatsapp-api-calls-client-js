@@ -42,3 +42,16 @@ export interface IceCandidatePayload {
 export interface RemovePeerPayload {
   peerID: string;
 }
+
+export interface SocketDisconnectPayload {
+  reason: SocketDisconnectReason;
+  details?: unknown;
+}
+
+export type SocketDisconnectReason =
+  | 'io server disconnect'
+  | 'io client disconnect'
+  | 'ping timeout'
+  | 'transport close'
+  | 'transport error'
+  | 'parse error';

@@ -1,4 +1,4 @@
-import { io, Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 
 import { EndCallReasonEnum } from './common/end-call-reason.enum.ts';
 import { call } from './utils';
@@ -15,6 +15,7 @@ import {
   IncomingCallPayload,
   RemovePeerPayload,
   SessionDescriptionPayload,
+  SocketDisconnectPayload,
 } from 'common';
 
 export interface GreenApiVoipClient extends EventTarget {
@@ -52,10 +53,6 @@ export class GreenApiVoipClient extends EventTarget {
   private incomingCallTimeout: ReturnType<typeof setTimeout> | null = null;
   private call: Call | null = null;
 
-  public socketConnected: boolean = false;
-  public socketDisconnectReason: Socket.DisconnectReason | null = null;
-  public socketDisconnectDetails: unknown;
-
   public constructor() {
     super();
 
@@ -77,9 +74,10 @@ export class GreenApiVoipClient extends EventTarget {
     });
 
     this.socket.on('connect', () => {
-      this.socketConnected = this.socket.connected;
-
       console.log('socket connected: ', this.socket.connected, this.socket);
+
+      this.onSocketConnect();
+
       resolveCallback();
     });
 
@@ -88,17 +86,7 @@ export class GreenApiVoipClient extends EventTarget {
       throw err;
     });
 
-    this.socket.on('disconnect', (reason, details) => {
-      this.socketConnected = this.socket.connected;
-      this.socketDisconnectReason = reason;
-      this.socketDisconnectDetails = details;
-
-      console.log(
-        `socket status connected: ${this.socketConnected}`,
-        `reason: ${reason}`,
-        `details: ${details}`
-      );
-    });
+    this.socket.on('disconnect', (reason, details) => this.onSocketDisconnect({ reason, details }));
 
     this.socket.on(Actions.ADD_PEER, this.onNewPeer);
     this.socket.on(Actions.REMOVE_PEER, this.onRemovePeer);
@@ -256,6 +244,14 @@ export class GreenApiVoipClient extends EventTarget {
         detail: { type: EndCallReasonEnum.REMOTE, payload: payload },
       })
     );
+  };
+
+  private onSocketConnect = () => {
+    new CustomEvent(Actions.SOCKET_CONNECT);
+  };
+
+  private onSocketDisconnect = (payload: SocketDisconnectPayload) => {
+    new CustomEvent(Actions.SOCKET_DISCONNECT, { detail: payload });
   };
   //#endregion
 

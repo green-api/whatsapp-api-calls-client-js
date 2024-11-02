@@ -14,4 +14,6 @@ export enum Actions {
   CALL_STATE = 'call-state',
   LOCAL_STREAM_READY = 'local-stream-ready',
   REMOTE_STREAM_READY = 'remote-stream-ready',
+  SOCKET_CONNECT = 'socket-connect',
+  SOCKET_DISCONNECT = 'socket-disconnect',
 }

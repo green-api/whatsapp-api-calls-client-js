@@ -1,5 +1,3 @@
-import { Socket } from 'socket.io-client';
-
 declare interface CallActiveTime {
     sec: number;
     msec: number;
@@ -98,9 +96,6 @@ export declare class GreenApiVoipClient extends EventTarget {
     private options;
     private incomingCallTimeout;
     private call;
-    socketConnected: boolean;
-    socketDisconnectReason: Socket.DisconnectReason | null;
-    socketDisconnectDetails: unknown;
     constructor();
     /**
      * Method destroys connection with signaling socket server.
@@ -118,6 +113,8 @@ export declare class GreenApiVoipClient extends EventTarget {
     private onIncomingCall;
     private onCallState;
     private onEndCall;
+    private onSocketConnect;
+    private onSocketDisconnect;
     /**
      * Method sends request to start whatsapp call.
      */
@@ -144,6 +141,8 @@ declare interface GreenApiVoipClientEventMap {
     'end-call': CustomEvent<EndCallPayload>;
     'call-state': CustomEvent<CallStatePayload>;
     'incoming-call': CustomEvent<IncomingCallPayload>;
+    'socket-connect': CustomEvent<undefined>;
+    'socket-disconnect': CustomEvent<SocketDisconnectPayload>;
 }
 
 declare interface GreenApiVoipClientInitOptions {
@@ -180,5 +179,18 @@ declare interface ParticipantsEntity {
     videoEnabledAtCallStart: boolean;
     videoPreviewStarted: boolean;
 }
+
+declare interface SocketDisconnectPayload {
+    reason: SocketDisconnectReason;
+    details?: unknown;
+}
+
+declare type SocketDisconnectReason =
+| 'io server disconnect'
+| 'io client disconnect'
+| 'ping timeout'
+| 'transport close'
+| 'transport error'
+| 'parse error';
 
 export { }

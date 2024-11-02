@@ -1,4 +1,9 @@
-import { CallStatePayload, EndCallPayload, IncomingCallPayload } from './signal-socket-types.ts';
+import {
+  CallStatePayload,
+  EndCallPayload,
+  IncomingCallPayload,
+  SocketDisconnectPayload,
+} from './signal-socket-types.ts';
 
 export interface GreenApiVoipClientInitOptions {
   idInstance: string;
@@ -11,4 +16,6 @@ export interface GreenApiVoipClientEventMap {
   'end-call': CustomEvent<EndCallPayload>;
   'call-state': CustomEvent<CallStatePayload>;
   'incoming-call': CustomEvent<IncomingCallPayload>;
+  'socket-connect': CustomEvent<undefined>;
+  'socket-disconnect': CustomEvent<SocketDisconnectPayload>;
 }
