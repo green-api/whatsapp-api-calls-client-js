@@ -247,11 +247,11 @@ export class GreenApiVoipClient extends EventTarget {
   };
 
   private onSocketConnect = () => {
-    new CustomEvent(Actions.SOCKET_CONNECT);
+    this.dispatchEvent(new CustomEvent(Actions.SOCKET_CONNECT));
   };
 
   private onSocketDisconnect = (payload: SocketDisconnectPayload) => {
-    new CustomEvent(Actions.SOCKET_DISCONNECT, { detail: payload });
+    this.dispatchEvent(new CustomEvent(Actions.SOCKET_DISCONNECT, { detail: payload }));
   };
   //#endregion
 
