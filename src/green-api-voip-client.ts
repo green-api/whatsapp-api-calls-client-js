@@ -76,6 +76,8 @@ export class GreenApiVoipClient extends EventTarget {
     });
 
     this.socket.on('connect', () => {
+      this.socketConnected = this.socket.connected;
+
       console.log('socket connected: ', this.socket.connected, this.socket);
       resolveCallback();
     });
@@ -86,6 +88,7 @@ export class GreenApiVoipClient extends EventTarget {
     });
 
     this.socket.on('disconnect', (reason, details) => {
+      this.socketConnected = this.socket.connected;
       this.socketDisconnectReason = reason;
       this.socketDisconnectDetails = details;
 
@@ -95,8 +98,6 @@ export class GreenApiVoipClient extends EventTarget {
         `details: ${details}`
       );
     });
-
-    this.socketConnected = this.socket.connected;
 
     this.socket.on(Actions.ADD_PEER, this.onNewPeer);
     this.socket.on(Actions.REMOVE_PEER, this.onRemovePeer);
