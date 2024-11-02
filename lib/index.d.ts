@@ -67,6 +67,21 @@ declare interface CallWaitingInfo {
     call_log_info: CallLogInfo;
 }
 
+declare interface EndCallPayload {
+    info: {
+        context: string;
+        incoming: boolean;
+    };
+    type: EndCallReasonEnum;
+}
+
+declare enum EndCallReasonEnum {
+    SELF,
+    REMOTE,
+    REJECTED,
+    TIMEOUT,
+}
+
 export declare interface GreenApiVoipClient extends EventTarget {
     addEventListener<K extends keyof GreenApiVoipClientEventMap>(type: K, listener: (this: GreenApiVoipClient, ev: GreenApiVoipClientEventMap[K]) => void, options?: boolean | AddEventListenerOptions): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
@@ -126,7 +141,7 @@ export declare class GreenApiVoipClient extends EventTarget {
 declare interface GreenApiVoipClientEventMap {
     'local-stream-ready': CustomEvent<MediaStream>;
     'remote-stream-ready': CustomEvent<MediaStream>;
-    'end-call': CustomEvent<CallStatePayload>;
+    'end-call': CustomEvent<EndCallPayload>;
     'call-state': CustomEvent<CallStatePayload>;
     'incoming-call': CustomEvent<IncomingCallPayload>;
 }
