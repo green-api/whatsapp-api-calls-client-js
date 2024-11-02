@@ -8,9 +8,11 @@ export interface IncomingCallPayload {
 
 export interface CallStatePayload {
   info: {
-    callId: string;
-    info: CallInfo;
-    state: string;
+    info: {
+      callId: string;
+      callInfo: CallInfo;
+      state: string;
+    };
   };
 }
 

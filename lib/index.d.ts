@@ -47,9 +47,11 @@ declare interface CallLogInfo {
 
 declare interface CallStatePayload {
     info: {
-        callId: string;
-        info: CallInfo;
-        state: string;
+        info: {
+            callId: string;
+            callInfo: CallInfo;
+            state: string;
+        };
     };
 }
 
