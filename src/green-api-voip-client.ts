@@ -8,6 +8,7 @@ import {
   Actions,
   AddPeerPayload,
   CallStatePayload,
+  EndCallPayload,
   GreenApiVoipClientEventMap,
   GreenApiVoipClientInitOptions,
   IceCandidatePayload,
@@ -246,7 +247,7 @@ export class GreenApiVoipClient extends EventTarget {
     this.dispatchEvent(new CustomEvent(Actions.CALL_STATE, { detail: payload }));
   };
 
-  private onEndCall = (payload: CallStatePayload) => {
+  private onEndCall = (payload: EndCallPayload) => {
     this.clearIncomingCallTimeout();
     this.socket.emit(Actions.LEAVE, { callID: this.options!.idInstance });
     this.call = null;

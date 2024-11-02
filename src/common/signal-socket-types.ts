@@ -1,12 +1,25 @@
 import { CallInfo } from './call-types';
+import { EndCallReasonEnum } from './end-call-reason.enum.ts';
 
 export interface IncomingCallPayload {
   timeout: number;
-  info: { callId: string; wid: { device: number; domainType: number; type: number; user: string; } };
+  info: { callId: string; wid: { device: number; domainType: number; type: number; user: string } };
 }
 
 export interface CallStatePayload {
-  info: CallInfo;
+  info: {
+    callId: string;
+    info: CallInfo;
+    state: string;
+  };
+}
+
+export interface EndCallPayload {
+  info: {
+    context: string;
+    incoming: boolean;
+  };
+  type: EndCallReasonEnum;
 }
 
 export interface AddPeerPayload {

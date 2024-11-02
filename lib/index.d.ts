@@ -6,16 +6,10 @@ declare interface CallActiveTime {
 }
 
 declare interface CallInfo {
-    call_state: number;
-    call_id: string;
-    peer_raw_jid: string;
-    initial_peer_raw_jid: string;
-    creator_raw_jid: string;
-    caller_status: number;
-    call_active_time: CallActiveTime;
-    call_duration: number;
-    call_ending: number;
-    call_ended_by_me: number;
+    callId: string;
+    callerStatus: number | boolean;
+    callActiveTime: CallActiveTime;
+    callDuration: number;
     call_result: number;
     call_setup_error_type: number;
     bytes_sent: number;
@@ -27,14 +21,14 @@ declare interface CallInfo {
     self_camera_front_facing: number;
     video_codec: number;
     aec_mode: number;
-    is_group_call: number;
+    isGroupCall: boolean;
     enable_group_call: number;
     is_group_call_created_on_server: number;
     initial_group_transaction_id: number;
-    participant_count: number;
+    participantCount: number;
     participants?: ParticipantsEntity[] | null;
-    can_invite_new_participant: number;
-    can_switch_audio_video: number;
+    canInviteNewParticipant: boolean;
+    canSwitchAudioVideo: boolean;
     call_waiting_info: CallWaitingInfo;
 }
 
@@ -52,7 +46,11 @@ declare interface CallLogInfo {
 }
 
 declare interface CallStatePayload {
-    info: CallInfo;
+    info: {
+        callId: string;
+        info: CallInfo;
+        state: string;
+    };
 }
 
 declare interface CallWaitingInfo {
@@ -138,7 +136,7 @@ declare interface GreenApiVoipClientInitOptions {
 
 declare interface IncomingCallPayload {
     timeout: number;
-    info: { callId: string; wid: { device: number; domainType: number; type: number; user: string; } };
+    info: { callId: string; wid: { device: number; domainType: number; type: number; user: string } };
 }
 
 declare interface Jid {
@@ -147,28 +145,23 @@ declare interface Jid {
 }
 
 declare interface ParticipantsEntity {
-    device_raw_jid: string;
-    jid: Jid;
+    deviceRawJid: string;
+    userJid: Jid;
+    wid: Jid;
     state: number;
-    order_id: number;
-    is_self: number;
-    is_muted: number;
-    is_interrupted: number;
-    is_backgrounded: number;
-    video_render_started: number;
-    video_decode_started: number;
-    video_decode_paused: number;
-    video_width: number;
-    video_state: number;
-    video_height: number;
-    video_orientation: number;
-    is_audio_video_switch_enabled: number;
-    is_audio_video_switch_supported: number;
-    is_invited_by_self: number;
-    is_call_offer_cancelled: number;
-    rx_connecting: number;
-    rx_timedout: number;
-    rx_audio_packet_count: number;
+    orderId: number;
+    isSelf: boolean;
+    isMuted: boolean;
+    isInterrupted: boolean;
+    isBackgrounded: boolean;
+    videoRenderStarted: boolean;
+    videoState: number;
+    videoOrientation: number;
+    rotateVideo: boolean;
+    videoCaptureStarted: boolean;
+    videoEnabled: boolean;
+    videoEnabledAtCallStart: boolean;
+    videoPreviewStarted: boolean;
 }
 
 export { }
