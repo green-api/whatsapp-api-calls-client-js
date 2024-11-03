@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from 'react';
 
 import { Button, Flex, Space, notification } from 'antd';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 
 import { Actions, CallStatePayload, EndCallPayload } from 'common';
 import CountUpTimer from 'components/count-up-timer';
@@ -64,7 +64,7 @@ const Call: FC = () => {
   };
 
   if (!hasActiveCall) {
-    return <Navigate to={Routes.CONTACTS} replace />;
+    return <Navigate to={Routes.MAIN} replace />;
   }
 
   return (
@@ -83,11 +83,6 @@ const Call: FC = () => {
                   }}
                   autoPlay
                   muted={false}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    filter: 'blur(30px)',
-                  }}
                 />
                 <div className="stream-visualizer">
                   {clientID === LOCAL_VIDEO

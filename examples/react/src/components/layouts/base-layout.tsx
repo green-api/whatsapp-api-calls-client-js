@@ -1,63 +1,29 @@
 import { FC, useEffect } from 'react';
 
-import { Button, Descriptions, Flex, notification } from 'antd';
+import { Button, Descriptions, Flex, Layout, notification } from 'antd';
 import { Outlet, useNavigate } from 'react-router-dom';
 
-import { Actions, IncomingCallPayload, SocketDisconnectPayload } from 'common';
+import { Actions, IncomingCallPayload } from 'common';
 import Header from 'components/header';
 import { useAppSelector } from 'hooks/redux';
 import { useActions } from 'hooks/useActions';
+import { Routes } from 'router/routes';
 import { selectAuth, selectCredentials } from 'store/slices/user-slice';
 import { voipClient } from 'voip';
 
 const BaseLayout: FC = () => {
-  const { idInstance, apiTokenInstance } = useAppSelector(selectCredentials);
-  const auth = useAppSelector(selectAuth);
+  const { idInstance } = useAppSelector(selectCredentials);
+  const isAuth = useAppSelector(selectAuth);
+
   const navigate = useNavigate();
 
-  const { setSocketConnectionInfo, setHasActiveCall } = useActions();
+  const { setHasActiveCall } = useActions();
 
-  // auth handler
   useEffect(() => {
-    document.documentElement.classList.add('default-theme');
-
-    (async () => {
-      if (idInstance && apiTokenInstance && auth) {
-        try {
-          await voipClient.init({ idInstance, apiTokenInstance });
-        } catch (err) {
-          notification.error({
-            message: 'Произошла ошибка!',
-            description: (err as Error).message,
-            duration: 10,
-          });
-        }
-      }
-    })();
-  }, [auth, idInstance, apiTokenInstance]);
-
-  // socket  connection status handler
-  useEffect(() => {
-    const socketConnectHandler = () => {
-      setSocketConnectionInfo({ connected: true });
-    };
-
-    const socketDisconnectHandler = (event: CustomEvent<SocketDisconnectPayload>) => {
-      setSocketConnectionInfo({
-        connected: false,
-        reason: event.detail.reason,
-        details: event.detail.details,
-      });
-    };
-
-    voipClient.addEventListener(Actions.SOCKET_CONNECT, socketConnectHandler);
-    voipClient.addEventListener(Actions.SOCKET_DISCONNECT, socketDisconnectHandler);
-
-    return () => {
-      voipClient.removeEventListener(Actions.SOCKET_CONNECT, socketConnectHandler);
-      voipClient.removeEventListener(Actions.SOCKET_DISCONNECT, socketDisconnectHandler);
-    };
-  }, []);
+    if (!isAuth) {
+      navigate(Routes.AUTH);
+    }
+  }, [isAuth, navigate]);
 
   // incoming call handler
 
@@ -133,10 +99,12 @@ const BaseLayout: FC = () => {
   }, [idInstance]);
 
   return (
-    <div className="app">
+    <Layout className="app">
       <Header />
-      <Outlet />
-    </div>
+      <Layout.Content>
+        <Outlet />
+      </Layout.Content>
+    </Layout>
   );
 };
 

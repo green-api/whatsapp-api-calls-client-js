@@ -1,11 +1,11 @@
 .loading,
-.main-page-auth {
+.flex-center {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.contacts-page {
+.main-page {
   display: flex;
   align-items: flex-start;
   flex-direction: column;

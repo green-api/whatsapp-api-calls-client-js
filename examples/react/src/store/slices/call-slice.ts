@@ -12,7 +12,7 @@ const initialState: CallState = {
 };
 
 const callSlice = createSlice({
-  name: 'userSlice',
+  name: 'callSlice',
   initialState,
   reducers: {
     setActivePhoneNumber: (state, action: PayloadAction<CallState['activePhoneNumber']>) => {

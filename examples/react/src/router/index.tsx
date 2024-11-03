@@ -1,35 +1,34 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 import { Routes } from './routes';
-import RequireAuth from '../components/require-auth';
-import BaseLayout from 'components/base-layout';
+import AuthLayout from 'components/layouts/auth-layout';
+import BaseLayout from 'components/layouts/base-layout';
+import Auth from 'pages/auth';
 import Call from 'pages/call';
-import Contacts from 'pages/contacts';
 import Main from 'pages/main';
+import Profile from 'pages/profile';
 
 const routerConfig = [
   {
-    path: Routes.MAIN,
-    element: <BaseLayout />,
+    element: <AuthLayout />,
     children: [
       {
-        index: true,
-        element: <Main />,
-      },
-      {
-        element: <RequireAuth />,
-        children: [
-          {
-            path: Routes.CALL,
-            element: <Call />,
-          },
-          {
-            path: Routes.CONTACTS,
-            element: <Contacts />,
-          },
-        ],
+        path: Routes.AUTH,
+        element: <Auth />,
       },
     ],
+  },
+  {
+    element: <BaseLayout />,
+    children: [
+      { path: Routes.MAIN, element: <Main /> },
+      { path: Routes.PROFILE, element: <Profile /> },
+      { path: Routes.CALL, element: <Call /> },
+    ],
+  },
+  {
+    path: '*',
+    element: <Navigate to={Routes.MAIN} />,
   },
 ];
 
