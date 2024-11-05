@@ -2,7 +2,7 @@ import { FC } from 'react';
 
 import { Layout } from 'antd';
 
-import Logo from './logo.';
+import Logo from './logo';
 import 'styles/components/header.css';
 
 const Header: FC = () => {

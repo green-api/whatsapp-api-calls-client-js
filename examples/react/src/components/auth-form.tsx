@@ -35,7 +35,7 @@ const AuthForm: FC = () => {
         case StateInstanceEnum.Authorized:
           setCredentials(credentials);
 
-          navigate(Routes.CONTACTS);
+          navigate(Routes.MAIN);
 
           return;
 
