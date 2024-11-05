@@ -9,7 +9,6 @@
   display: flex;
   align-items: flex-start;
   flex-direction: column;
-  row-gap: 20px;
 }
 
 .contact-info {
