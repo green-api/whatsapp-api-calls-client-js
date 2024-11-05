@@ -1,19 +1,15 @@
 import { FC } from 'react';
 
-import { Image, Space } from 'antd';
-import Title from 'antd/es/typography/Title';
+import { Image } from 'antd';
 
-import logo from 'assets/header-logo.svg';
+import logo from 'assets/Logo_GREEN-API_.svg';
 import 'styles/components/logo.css';
 
 const Logo: FC = () => {
   return (
     <div className="logo-wrapper">
       <a className="logo">
-        <Space>
-          <Image src={logo} preview={false} />
-          <Title level={3}>GREEN API</Title>
-        </Space>
+        <Image src={logo} preview={false} width={200} />
       </a>
     </div>
   );

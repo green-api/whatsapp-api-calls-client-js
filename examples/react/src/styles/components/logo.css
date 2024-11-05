@@ -11,12 +11,7 @@
   white-space: nowrap;
   margin: 0 auto;
 
-  img {
-    max-width: 60px;
-  }
-
   &:hover {
     background: #f0f2f5;
   }
-
 }
