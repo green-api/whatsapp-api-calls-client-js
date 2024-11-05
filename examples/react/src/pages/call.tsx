@@ -22,7 +22,7 @@ const Call: FC = () => {
 
   const { setHasActiveCall } = useActions();
 
-  const [callState, setCallState] = useState('');
+  const [callState, setCallState] = useState('Соединение...');
 
   useEffect(() => {
     const endCallHandler = (event: CustomEvent<EndCallPayload>) => {
@@ -38,7 +38,8 @@ const Call: FC = () => {
     };
 
     const callStateHandler = (event: CustomEvent<CallStatePayload>) => {
-      setCallState(event.detail.info.info.state);
+      console.log(event.detail);
+      setCallState(event.detail.info.info.state === 'ACTIVE' ? 'Активен' : 'Идёт дозвон...');
     };
 
     voipClient.addEventListener(Actions.END_CALL, endCallHandler);

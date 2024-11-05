@@ -17,12 +17,14 @@ const ContactsList: FC<ContactsListProps> = ({ contacts }) => {
 
   const { setActivePhoneNumber } = useActions();
 
+  const [pageSize, setPageSize] = useState(6);
+
   const handleSearch = useCallback((filteredList: GetContactsResponse) => {
     setSearchResult(filteredList);
   }, []);
 
   return (
-    <Flex vertical style={{ width: 600, alignSelf: 'center' }}>
+    <Flex vertical style={{ width: 600, alignSelf: 'center', padding: 10 }}>
       <List
         className="contact-list"
         dataSource={searchResult.filter(
@@ -31,7 +33,10 @@ const ContactsList: FC<ContactsListProps> = ({ contacts }) => {
         bordered
         size="large"
         pagination={{
-          pageSize: 6,
+          total: contacts.length,
+          pageSize: pageSize,
+          pageSizeOptions: [6, 10, 20, 50, 100],
+          onShowSizeChange: (_, size) => setPageSize(size),
         }}
         header={<SearchForm list={contacts} onSearch={handleSearch} />}
         renderItem={(item) => {
@@ -41,7 +46,7 @@ const ContactsList: FC<ContactsListProps> = ({ contacts }) => {
               onClick={() => setActivePhoneNumber(getNumber(item.id))}
             >
               <List.Item.Meta
-                title={item.contactName || item.name || getNumber(item.id)}
+                title={item.contactName?.trim() || item.name?.trim() || getNumber(item.id)}
                 description={item.id}
               />
             </List.Item>

@@ -1,0 +1,18 @@
+.statusCircle {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 5px 1px currentColor;
+  margin: 0 4px;
+}
+
+.statusCircle__auth {
+  background: #4CAE4FFF;
+  color: #4CAE4FFF;
+}
+
+.statusCircle__notAuth {
+  background: rgb(255, 39, 39);
+  color: rgb(255, 39, 39);
+}
