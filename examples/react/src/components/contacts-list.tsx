@@ -1,18 +1,21 @@
 import { FC, useCallback, useState } from 'react';
 
-import { Flex, List } from 'antd';
+import { Flex, List, Spin } from 'antd';
 
 import { GetContactsResponse } from 'common';
 import SearchForm from 'components/search-form';
+import { useAppSelector } from 'hooks/redux';
 import { useActions } from 'hooks/useActions';
+import { useGetContactsQuery } from 'services/endpoints';
+import { selectCredentials } from 'store/slices/user-slice';
 import 'styles/components/contact-list.css';
 import { getNumber } from 'utils';
 
-interface ContactsListProps {
-  contacts: GetContactsResponse;
-}
+const ContactsList: FC = () => {
+  const credentials = useAppSelector(selectCredentials);
 
-const ContactsList: FC<ContactsListProps> = ({ contacts }) => {
+  const { data: contacts, isLoading } = useGetContactsQuery(credentials);
+
   const [searchResult, setSearchResult] = useState(contacts);
 
   const { setActivePhoneNumber } = useActions();
@@ -23,22 +26,26 @@ const ContactsList: FC<ContactsListProps> = ({ contacts }) => {
     setSearchResult(filteredList);
   }, []);
 
+  if (isLoading) {
+    return <Spin size="large" style={{ alignSelf: 'center' }} />;
+  }
+
   return (
     <Flex vertical style={{ width: 600, alignSelf: 'center', padding: 10 }}>
       <List
         className="contact-list"
-        dataSource={searchResult.filter(
+        dataSource={searchResult?.filter(
           (contact) => contact.type !== 'group' && !contact.id.includes('0@cu.us')
         )}
         bordered
         size="large"
         pagination={{
-          total: contacts.length,
+          total: searchResult?.length,
           pageSize: pageSize,
           pageSizeOptions: [6, 10, 20, 50, 100],
           onShowSizeChange: (_, size) => setPageSize(size),
         }}
-        header={<SearchForm list={contacts} onSearch={handleSearch} />}
+        header={<SearchForm list={contacts || []} onSearch={handleSearch} />}
         renderItem={(item) => {
           return (
             <List.Item
