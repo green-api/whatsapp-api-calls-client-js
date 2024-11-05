@@ -40,7 +40,6 @@ const ContactsList: FC = () => {
         bordered
         size="large"
         pagination={{
-          total: searchResult?.length,
           pageSize: pageSize,
           pageSizeOptions: [6, 10, 20, 50, 100],
           onShowSizeChange: (_, size) => setPageSize(size),
