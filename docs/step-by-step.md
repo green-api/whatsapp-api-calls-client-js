@@ -201,10 +201,22 @@ my-react-app/
 └── .gitignore
 ```
 
-- `public/index.html`: The main HTML file.
-- `src/App.jsx`: The main React component.
-- `src/main.jsx`: The entry point of the React application.
-- `src/index.css`: The CSS file for styling.
+- `index.html`: HTML file to start building the Vite project
+- `package.json` - needed for npm build
+- `tsconfig.json` - needed to use typescript
+- `vite.config.js` - needed to build the project's html pages
+- `public/index.html`: Main HTML file
+- `src/App.jsx`: Main React component
+- `src/main.jsx`: React application entry point
+- `src/index.css`: CSS file for styling
+- `assets` -- project images
+- `common` - everything related to typing and constants
+- `components` - folder with custom react components
+- `hooks` - custom hooks for react components
+- `pages` - page components (essentially a component consisting of several custom components, for example, the main page consists of header, contact-list, etc. components)
+- `services` - contains the Redux Toolkit configuration for sending requests to the server (for example, for a list of contacts, getting the status of an instance, etc.)
+- `store` - Redux Toolkit configuration for working with a client store
+- `utils` - auxiliary functions for the project (error handling, date formatting, etc.)
 
 ### Modifying the App Component
 
