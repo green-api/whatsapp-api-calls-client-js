@@ -178,15 +178,25 @@ The structure of a React project with Vite will look like this:
 
 ```
 my-react-app/
-├── node_modules/
-├── public/
-│   └── index.html
 ├── src/
-│   ├── assets/
-│   ├── App.jsx
-│   ├── main.jsx
-│   └── index.css
+│ ├── assets/
+│ ├── common/
+│ ├── components/
+│ ├── hooks/
+│ ├── pages/
+│ ├── router/
+│ ├── services/
+│ ├── store/
+│ ├── styles/
+│ ├── store/
+│ ├── utils/
+│ ├── voip/
+│ ├── App.tsx
+│ ├── main.tsx
+│ └── index.css
+├── index.html
 ├── package.json
+├── tsconfig.json
 ├── vite.config.js
 └── .gitignore
 ```
