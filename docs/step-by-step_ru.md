@@ -177,23 +177,45 @@ npm run dev
 
 ```
 my-react-app/
-├── node_modules/
-├── public/
-│ └── index.html
 ├── src/
 │ ├── assets/
-│ ├── App.jsx
-│ ├── main.jsx
+│ ├── common/
+│ ├── components/
+│ ├── hooks/
+│ ├── pages/
+│ ├── router/
+│ ├── services/
+│ ├── store/
+│ ├── styles/
+│ ├── store/
+│ ├── utils/
+│ ├── voip/
+│ ├── App.tsx
+│ ├── main.tsx
 │ └── index.css
+├── index.html
 ├── package.json
+├── tsconfig.json
 ├── vite.config.js
 └── .gitignore
 ```
 
-- `public/index.html`: Основной файл HTML.
-- `src/App.jsx`: Основной компонент React.
-- `src/main.jsx`: Точка входа приложения React.
-- `src/index.css`: Файл CSS для стилизации.
+- index.html: файл HTML для начала сборки проекта Vite  
+- package.json - нужен для сборки npm  
+- tsconfig.json - нужен для использования typescript  
+- vite.config.js - нужен для сборки html страниц проекта  
+- public/index.html: Основной файл HTML  
+- src/App.jsx: Основной компонент React  
+- src/main.jsx: Точка входа приложения React  
+- src/index.css: Файл CSS для стилизации  
+- assets -- картинки проекта  
+- common - всё что связано с типизацией и константами  
+- components - папка с кастомными react-компонентами  
+- hooks - кастомные хуки для react-компонентов  
+- pages - компоненты-страницы (по сути компонент, состоящий из нескольких кастомный-компонентов, например страница main состоит из компонентов header, contact-list и т.д.)  
+- services - содержит в себе конфигурацию Redux Toolkit для отправки запросов на сервер (например за списком контактов, получение статуса инстанса и т.д.)  
+- store - конфигруация Redux Toolkit для работы с клиентским хранилищем  
+- utils - вспомогательные функции для проекта (обработка ошибок, форматирование дат и т.д.)
 
 #### Изменение компонента приложения  
 
