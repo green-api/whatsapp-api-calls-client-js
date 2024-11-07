@@ -16,7 +16,8 @@
 
 - [Documentation on English](../README.md)  
 
-Библиотека JavaScript WhatsАpp API Calls Client позволяет легко создавать JavaScript/TypeScript приложения для приема входящих звонков и создания исходящих звонков через WhatsApp. Чтобы воспользоваться библиотекой, нужно получить `ID_INSTANCE` и `API_TOKEN_INSTANCE` в [личном кабинете](https://console.green-api.com/). Есть бесплатный тариф инстанса разработчика. 
+Библиотека JavaScript WhatsАpp API Calls Client позволяет легко создавать JavaScript/TypeScript приложения для приема входящих звонков и создания исходящих звонков через WhatsApp через API
+сервиса [green-api.com](https://green-api.com/). Чтобы воспользоваться библиотекой, нужно получить `ID_INSTANCE` и `API_TOKEN_INSTANCE` в [личном кабинете](https://console.green-api.com/). Есть бесплатный тариф инстанса разработчика. 
 
 
 ## API
