@@ -16,7 +16,7 @@
 
 - [Документация на русском языке](./docs/README_ru.md)
 
-This library helps you easily create a JavaScript/TypeScript application to receive incoming calls and start outgoing calls via WhatsApp. To use this library, you need to obtain your `ID_INSTANCE` and `API_TOKEN_INSTANCE` from [control panel](](https://console.green-api.com)). The library is free for developers.
+This library helps you easily create a JavaScript/TypeScript application to receive incoming calls and start outgoing calls via WhatsApp using the API service [green-api.com](https://green-api.com/en/). To use this library, you need to obtain your `ID_INSTANCE` and `API_TOKEN_INSTANCE` from [control panel](](https://console.green-api.com)). The library is free for developers.
 
 ## API
 
