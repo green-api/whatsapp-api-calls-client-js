@@ -19,6 +19,7 @@ declare interface CallInfo {
     self_camera_front_facing: number;
     video_codec: number;
     aec_mode: number;
+    call_state: WACallState;
     isGroupCall: boolean;
     enable_group_call: number;
     is_group_call_created_on_server: number;
@@ -193,5 +194,17 @@ declare type SocketDisconnectReason =
 | 'transport close'
 | 'transport error'
 | 'parse error';
+
+declare enum WACallState {
+    WACallStateNone = 0,
+    WACallStateCalling = 1,
+    WACallStatePreacceptReceived = 2,
+    WACallStateReceivedCall = 3,
+    WACallStateAcceptSent = 4,
+    WACallStateAcceptReceived = 5,
+    WACallStateCallActive = 6,
+    WACallStateCallActiveElseWhere = 7,
+    WACallStateReceivedCallWithoutOffer = 8,
+}
 
 export { }
