@@ -12,7 +12,7 @@ import { selectAuth, selectCredentials } from 'store/slices/user-slice';
 import { voipClient } from 'voip';
 
 const App: FC = () => {
-  const { idInstance, apiTokenInstance } = useAppSelector(selectCredentials);
+  const { idInstance, apiTokenInstance, apiUrl } = useAppSelector(selectCredentials);
   const auth = useAppSelector(selectAuth);
 
   const { setSocketConnectionInfo } = useActions();
@@ -22,9 +22,9 @@ const App: FC = () => {
     document.documentElement.classList.add('default-theme');
 
     (async () => {
-      if (idInstance && apiTokenInstance && auth) {
+      if (idInstance && apiTokenInstance && apiUrl && auth) {
         try {
-          await voipClient.init({ idInstance, apiTokenInstance });
+          await voipClient.init({ idInstance, apiTokenInstance, apiUrl });
         } catch (err) {
           notification.error({
             message: 'Произошла ошибка!',

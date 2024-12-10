@@ -14,6 +14,7 @@ export interface CallState {
 export interface UserCredentials {
   idInstance: string;
   apiTokenInstance: string;
+  apiUrl: string;
 }
 
 export interface ApiErrorResponse<T = unknown> {

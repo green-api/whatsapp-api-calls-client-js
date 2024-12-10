@@ -13,6 +13,7 @@ export interface CallInfo {
   video_preview_started: number;
   self_camera_front_facing: number;
   video_codec: number;
+  call_state: WACallState;
   aec_mode: number;
   isGroupCall: boolean;
   enable_group_call: number;
@@ -78,4 +79,16 @@ export interface CallLogInfo {
   caller_status: number;
   initial_peer_raw_jid: string;
   initial_group_transaction_id: number;
+}
+
+export enum WACallState {
+  WACallStateNone = 0,
+  WACallStateCalling = 1,
+  WACallStatePreacceptReceived = 2,
+  WACallStateReceivedCall = 3,
+  WACallStateAcceptSent = 4,
+  WACallStateAcceptReceived = 5,
+  WACallStateCallActive = 6,
+  WACallStateCallActiveElseWhere = 7,
+  WACallStateReceivedCallWithoutOffer = 8,
 }

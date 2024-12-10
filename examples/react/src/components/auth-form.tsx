@@ -3,7 +3,7 @@ import { FC } from 'react';
 import { Button, Card, Form, Input, notification } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
-import { StateInstanceEnum } from 'common';
+import { StateInstanceEnum, UserCredentials } from 'common';
 import { useAppSelector } from 'hooks/redux';
 import { useActions } from 'hooks/useActions';
 import { Routes } from 'router/routes';
@@ -12,28 +12,22 @@ import { selectCredentials } from 'store/slices/user-slice';
 import 'styles/components/auth-form.css';
 import { getErrorMessage } from 'utils';
 
-interface FormValues {
-  idInstance: string;
-  apiTokenInstance: string;
-}
+interface FormValues extends UserCredentials {}
 
 const AuthForm: FC = () => {
   const [form] = Form.useForm<FormValues>();
-  const { idInstance, apiTokenInstance } = useAppSelector(selectCredentials);
+  const { idInstance, apiTokenInstance, apiUrl } = useAppSelector(selectCredentials);
   const { setCredentials } = useActions();
   const navigate = useNavigate();
   const [getStateInstance, { isLoading }] = useLazyGetStateInstanceQuery();
 
   const onSignIn = async (values: FormValues) => {
-    const { apiTokenInstance, idInstance } = values;
-    const credentials = { idInstance, apiTokenInstance };
-
-    const { data, error } = await getStateInstance({ apiTokenInstance, idInstance });
+    const { data, error } = await getStateInstance(values);
 
     if (data) {
       switch (data.stateInstance) {
         case StateInstanceEnum.Authorized:
-          setCredentials(credentials);
+          setCredentials(values);
 
           navigate(Routes.MAIN);
 
@@ -82,6 +76,17 @@ const AuthForm: FC = () => {
   return (
     <Card className="form-card">
       <Form name="auth-form" size="large" onFinish={onSignIn} form={form}>
+        <Form.Item
+          name="apiUrl"
+          hasFeedback
+          initialValue={apiUrl}
+          rules={[
+            { required: true, message: 'apiUrl не может быть пустым!' },
+            { whitespace: true, message: 'apiUrl не может быть пустым!' },
+          ]}
+        >
+          <Input placeholder="apiUrl" autoComplete="off" />
+        </Form.Item>
         <Form.Item
           name="idInstance"
           hasFeedback

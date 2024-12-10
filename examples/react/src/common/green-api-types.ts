@@ -1,6 +1,7 @@
 export interface RequestParams {
   idInstance: string;
   apiTokenInstance: string;
+  apiUrl: string;
 }
 
 export interface GetStateInstanceResponse {

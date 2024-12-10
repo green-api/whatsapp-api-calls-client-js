@@ -12,7 +12,7 @@ import { selectAuth, selectCredentials } from 'store/slices/user-slice';
 import { voipClient } from 'voip';
 
 const BaseLayout: FC = () => {
-  const { idInstance } = useAppSelector(selectCredentials);
+  const { idInstance, apiTokenInstance, apiUrl } = useAppSelector(selectCredentials);
   const isAuth = useAppSelector(selectAuth);
 
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ const BaseLayout: FC = () => {
   const { setHasActiveCall } = useActions();
 
   useEffect(() => {
-    if (!isAuth) {
+    if (!isAuth || !idInstance || !apiTokenInstance || !apiUrl) {
       navigate(Routes.AUTH);
     }
   }, [isAuth, navigate]);

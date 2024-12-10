@@ -13,6 +13,7 @@ const initialState: UserState = getInitialStateFromStorage() || {
   credentials: {
     idInstance: '',
     apiTokenInstance: '',
+    apiUrl: '',
   },
   isAuth: false,
 };

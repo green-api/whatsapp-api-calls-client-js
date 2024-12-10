@@ -1,9 +1,9 @@
 import { FC, useEffect, useState } from 'react';
 
-import { Button, Flex, Space, notification } from 'antd';
+import { Button, Flex, notification, Space } from 'antd';
 import { Navigate } from 'react-router-dom';
 
-import { Actions, CallStatePayload, EndCallPayload } from 'common';
+import { Actions, CallStatePayload, EndCallPayload, WACallState } from 'common';
 import CountUpTimer from 'components/count-up-timer';
 import StreamVisualizer from 'components/stream-visualizer';
 import { useAppSelector } from 'hooks/redux';
@@ -39,7 +39,11 @@ const Call: FC = () => {
 
     const callStateHandler = (event: CustomEvent<CallStatePayload>) => {
       console.log(event.detail);
-      setCallState(event.detail.info.info.state === 'ACTIVE' ? 'Активен' : 'Идёт дозвон...');
+      setCallState(
+        event.detail.info.info.callInfo.call_state === WACallState.WACallStateCallActive
+          ? 'Активен'
+          : 'Идёт дозвон...'
+      );
     };
 
     voipClient.addEventListener(Actions.END_CALL, endCallHandler);
