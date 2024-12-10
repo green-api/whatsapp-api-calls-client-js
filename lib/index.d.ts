@@ -148,6 +148,7 @@ declare interface GreenApiVoipClientEventMap {
 declare interface GreenApiVoipClientInitOptions {
     idInstance: string;
     apiTokenInstance: string;
+    apiUrl: string;
 }
 
 declare interface IncomingCallPayload {
