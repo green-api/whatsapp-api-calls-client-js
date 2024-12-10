@@ -9,7 +9,7 @@ const Header: FC = () => {
   return (
     <Layout.Header className="header" style={{ height: 90 }}>
       <Logo />
-      <span style={{ fontSize: 25 }}>Whatsapp calls</span>
+      <span style={{ fontSize: 25, color: 'var(--primary-color)' }}>WhatsApp calls</span>
     </Layout.Header>
   );
 };

@@ -1,6 +1,6 @@
 import { FC } from 'react';
 
-import { Button, Row } from 'antd';
+import { Button, Flex } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
 import ContactsList from 'components/contacts-list';
@@ -15,12 +15,12 @@ const Main: FC = () => {
 
   return (
     <div className="main-page">
-      <Row style={{ padding: 10, width: '100%' }} justify="space-between">
-        <SocketConnectionInfo />
-        <Button size="large" onClick={onProfileClick} type="primary">
+      <Flex vertical gap={10} style={{ padding: 10 }}>
+        <Button size="large" onClick={onProfileClick} type="primary" style={{ maxWidth: 200 }}>
           Профиль
         </Button>
-      </Row>
+        <SocketConnectionInfo />
+      </Flex>
       <NewCallForm />
       <ContactsList />
     </div>

@@ -13,7 +13,7 @@ const Profile: FC = () => {
 
   return (
     <Flex vertical gap="large">
-      <Row style={{ padding: 10, alignSelf: 'flex-end' }}>
+      <Row style={{ padding: 10 }}>
         <Button size="large" onClick={onClickBack} type="primary">
           На страницу контактов
         </Button>
