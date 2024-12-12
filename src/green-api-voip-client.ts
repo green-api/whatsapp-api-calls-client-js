@@ -42,8 +42,8 @@ export interface GreenApiVoipClient extends EventTarget {
 }
 
 export class GreenApiVoipClient extends EventTarget {
-  private readonly socket: ReturnType<typeof io>;
-  private readonly connectPromise: Promise<void>;
+  private socket!: ReturnType<typeof io>;
+  private connectPromise: Promise<void> = Promise.resolve();
 
   private peerConnections: Record<string, RTCPeerConnection> = {};
   private localMediaStream: MediaStream | null = null;
@@ -53,22 +53,57 @@ export class GreenApiVoipClient extends EventTarget {
   private incomingCallTimeout: ReturnType<typeof setTimeout> | null = null;
   private call: Call | null = null;
 
+  private iceServers = JSON.parse(
+    import.meta.env.VITE_RTC_ICE_SERVERS.toString().replace(/\n/g, '').replace(/\s/g, '')
+  )
+
   public constructor() {
     super();
+  }
 
-    const iceServers = JSON.parse(
-      import.meta.env.VITE_RTC_ICE_SERVERS.toString().replace(/\n/g, '').replace(/\s/g, '')
-    );
+  /**
+   * Method destroys connection with signaling socket server.
+   */
+  public destroy() {
+    this.socket.disconnect();
+  }
 
-    console.log(iceServers);
+  public reload() {
+    this.socket.disconnect();
+    this.socket.connect();
+  }
 
+  /**
+   * Method connects to signaling socket server. If already connected won't do anything.
+   */
+  public async init(options: GreenApiVoipClientInitOptions) {
+    this.options = options;
+
+    if (this.socket?.connected) {
+      return;
+    }
+
+    const socketHost = `${options.apiUrl}/waInstance/${options.idInstance}/socket.io/`
+    this.initSocket(socketHost);
+
+    this.socket.auth = {
+      idInstance: this.options.idInstance,
+      apiInstanceToken: this.options.apiTokenInstance,
+      type: 'external',
+    };
+
+    this.socket.connect();
+
+    return this.connectPromise;
+  }
+
+  private initSocket(host: string) {
     let resolveCallback: (value: void | PromiseLike<void>) => void;
-
     this.connectPromise = new Promise((resolve) => {
       resolveCallback = resolve;
     });
 
-    this.socket = io(import.meta.env.VITE_SIGNALING_SERVER_URL, {
+    this.socket = io(host, {
       transports: ['websocket'],
       autoConnect: false,
     });
@@ -97,41 +132,6 @@ export class GreenApiVoipClient extends EventTarget {
     this.socket.on(Actions.END_CALL, this.onEndCall);
   }
 
-  /**
-   * Method destroys connection with signaling socket server.
-   */
-  public destroy() {
-    this.socket.disconnect();
-  }
-
-  public reload() {
-    this.socket.disconnect();
-    this.socket.connect();
-  }
-
-  /**
-   * Method connects to signaling socket server. If already connected won't do anything.
-   */
-  public async init(options: GreenApiVoipClientInitOptions) {
-    this.options = options;
-
-    // TODO: Need to add some validation for GreenAPI credentials. Maybe call some GET method (GetStateInstance)
-
-    if (this.socket.connected) {
-      return;
-    }
-
-    this.socket.auth = {
-      idInstance: this.options.idInstance,
-      apiInstanceToken: this.options.apiTokenInstance,
-      type: 'external',
-    };
-
-    this.socket.connect();
-
-    return this.connectPromise;
-  }
-
   //#region socket events
 
   private onNewPeer = async ({ peerID, createOffer }: AddPeerPayload) => {
@@ -145,14 +145,8 @@ export class GreenApiVoipClient extends EventTarget {
       return;
     }
 
-    const iceServers = JSON.parse(
-      import.meta.env.VITE_RTC_ICE_SERVERS.toString().replace(/\n/g, '').replace(/\s/g, '')
-    );
-
-    console.log(iceServers);
-
     this.peerConnections[peerID] = new RTCPeerConnection({
-      iceServers: iceServers,
+      iceServers: this.iceServers,
     });
 
     this.peerConnections[peerID].addEventListener('icecandidate', (event) => {

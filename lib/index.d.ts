@@ -89,14 +89,15 @@ export declare interface GreenApiVoipClient extends EventTarget {
 }
 
 export declare class GreenApiVoipClient extends EventTarget {
-    private readonly socket;
-    private readonly connectPromise;
+    private socket;
+    private connectPromise;
     private peerConnections;
     private localMediaStream;
     private remoteMediaStream;
     private options;
     private incomingCallTimeout;
     private call;
+    private iceServers;
     constructor();
     /**
      * Method destroys connection with signaling socket server.
@@ -107,6 +108,7 @@ export declare class GreenApiVoipClient extends EventTarget {
      * Method connects to signaling socket server. If already connected won't do anything.
      */
     init(options: GreenApiVoipClientInitOptions): Promise<void>;
+    private initSocket;
     private onNewPeer;
     private onRemovePeer;
     private onRemoteMedia;
