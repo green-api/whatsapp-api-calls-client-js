@@ -83,7 +83,8 @@ export class GreenApiVoipClient extends EventTarget {
       return;
     }
 
-    const socketHost = `${options.apiUrl}/waInstance/${options.idInstance}/socket.io/`
+    const pool = options.idInstance.slice(0, 4);
+    const socketHost = `https://${pool}.green-api.com`
     this.initSocket(socketHost);
 
     this.socket.auth = {
