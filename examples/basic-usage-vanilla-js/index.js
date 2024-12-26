@@ -33,10 +33,12 @@ let isInitialized = false;
 connectButton.addEventListener('click', async () => {
   const idInstance = document.getElementById('idInstance').value;
   const apiTokenInstance = document.getElementById('apiTokenInstance').value;
-
+  const apiUrl = document.getElementById('apiUrl').value;
+  
   await voipClient.init({
     idInstance: idInstance,
-    apiTokenInstance: apiTokenInstance
+    apiTokenInstance: apiTokenInstance,
+    apiUrl: apiUrl
   });
 
   isInitialized = true;
