@@ -75,6 +75,7 @@ const greenApiVoipClient = new GreenApiVoipClient();
 const initOptions = {
   idInstance: 'your-id-instance',
   apiTokenInstance: 'your-api-token-instance',
+  apiUrl: 'your-api-url-voip' // usually https://pool.voip.green-api.com, where pool is first 4 symbols at idInstance
 };
 
 // Initialize the client
