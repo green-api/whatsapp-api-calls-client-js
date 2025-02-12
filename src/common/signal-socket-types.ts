@@ -1,5 +1,4 @@
-import { CallInfo } from './call-types';
-import { EndCallReasonEnum } from './end-call-reason.enum.ts';
+import {CallInfo, CallState} from './call-types';
 
 export interface IncomingCallPayload {
   timeout: number;
@@ -16,12 +15,12 @@ export interface CallStatePayload {
   };
 }
 
+export interface CallStateEventPayload {
+  state: CallState;
+}
+
 export interface EndCallPayload {
-  info: {
-    context: string;
-    incoming: boolean;
-  };
-  type: EndCallReasonEnum;
+  incoming: boolean;
 }
 
 export interface AddPeerPayload {

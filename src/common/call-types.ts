@@ -92,3 +92,10 @@ export enum WACallState {
   WACallStateCallActiveElseWhere = 7,
   WACallStateReceivedCallWithoutOffer = 8,
 }
+
+export enum CallState {
+  CALLING = 'CALLING',
+  CALL_RECEIVED = 'CALL_RECEIVED',
+  IN_CALL = 'IN_CALL',
+}
+

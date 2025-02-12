@@ -1,9 +1,12 @@
-import { FC, useEffect, useState } from 'react';
+import 'styles/pages/call.css';
 
+import { FC, useEffect, useState } from 'react';
 import { Button, Flex, notification, Space } from 'antd';
 import { Navigate } from 'react-router-dom';
+import {EndCallPayload, CallStateEventPayload, WACallState, Actions} from '@green-api/whatsapp-api-calls-client-js';
 
-import { Actions, CallStatePayload, EndCallPayload, WACallState } from 'common';
+import {voipClient} from "../voip";
+
 import CountUpTimer from 'components/count-up-timer';
 import StreamVisualizer from 'components/stream-visualizer';
 import { useAppSelector } from 'hooks/redux';
@@ -11,9 +14,7 @@ import { useActions } from 'hooks/useActions';
 import { LOCAL_VIDEO, useVoip } from 'hooks/useVoip';
 import { Routes } from 'router/routes';
 import { selectHasActiveCall } from 'store/slices/call-slice';
-import 'styles/pages/call.css';
 import { generateCssLayout } from 'utils';
-import { voipClient } from 'voip';
 
 const Call: FC = () => {
   const { clients, provideMediaRef, remoteMediaStream, localMediaStream } = useVoip();
@@ -37,13 +38,24 @@ const Call: FC = () => {
       });
     };
 
-    const callStateHandler = (event: CustomEvent<CallStatePayload>) => {
-      console.log(event.detail);
-      setCallState(
-        event.detail.info.info.callInfo.call_state === WACallState.WACallStateCallActive
-          ? 'Активен'
-          : 'Идёт дозвон...'
-      );
+    const callStateHandler = (event: CustomEvent<CallStateEventPayload>) => {
+      console.log(event.detail)
+      return;
+
+      switch (event.detail.callState) {
+        case WACallState.WACallStateCalling: {
+          setCallState('Соединение...');
+          break;
+        }
+        case WACallState.WACallStatePreacceptReceived: {
+          setCallState('Идёт дозвон...');
+          break;
+        }
+        case WACallState.WACallStateCallActive: {
+          setCallState('Активен');
+          break;
+        }
+      }
     };
 
     voipClient.addEventListener(Actions.END_CALL, endCallHandler);

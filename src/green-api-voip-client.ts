@@ -1,12 +1,9 @@
 import { io } from 'socket.io-client';
 
-import { EndCallReasonEnum } from './common/end-call-reason.enum.ts';
-import { call } from './utils';
-import { timeout } from './utils/timeout.ts';
-import { Call } from 'call.ts';
+import { call, timeout } from './utils';
+import { Call } from './call';
 import {
-  Actions,
-  AddPeerPayload,
+  AddPeerPayload, CallState,
   CallStatePayload,
   EndCallPayload,
   GreenApiVoipClientEventMap,
@@ -15,8 +12,9 @@ import {
   IncomingCallPayload,
   RemovePeerPayload,
   SessionDescriptionPayload,
-  SocketDisconnectPayload,
-} from 'common';
+  SocketDisconnectPayload, WACallState,
+} from './common';
+import { EndCallReasonEnum, Actions } from './common';
 
 export interface GreenApiVoipClient extends EventTarget {
   addEventListener<K extends keyof GreenApiVoipClientEventMap>(
@@ -39,6 +37,52 @@ export interface GreenApiVoipClient extends EventTarget {
     listener: EventListenerOrEventListenerObject,
     options?: boolean | EventListenerOptions
   ): void;
+}
+
+export class AuthError extends Error {
+  public constructor() {
+    super("No provided idInstance and apiTokenInstance");
+  }
+}
+
+export class AlreadyInCallError extends Error {
+  public constructor() {
+    super("Already in call");
+  }
+
+}
+
+export class NoActiveCallError extends Error {
+  public constructor() {
+    super("No active call");
+  }
+
+}
+
+export class MediaStreamError extends Error {
+  public constructor() {
+    super("Cannot get capture of audio or video");
+  }
+}
+
+export class StartCallError extends Error {}
+
+export class SignalingError extends Error {
+  public constructor() {
+    super("Signaling error");
+  }
+}
+
+export class NoActiveIncomingCallError extends Error {
+  public constructor() {
+    super("No active incoming call");
+  }
+}
+
+export class ActiveIncomingCallError extends Error {
+  public constructor() {
+    super("Active incoming call");
+  }
 }
 
 export class GreenApiVoipClient extends EventTarget {
@@ -83,8 +127,8 @@ export class GreenApiVoipClient extends EventTarget {
       return;
     }
 
-    const pool = options.idInstance.slice(0, 4);
-    const socketHost = `https://${pool}.voip.green-api.com`
+    // const pool = options.idInstance.slice(0, 4);
+    const socketHost = `http://localhost:3001`
     this.initSocket(socketHost);
 
     this.socket.auth = {
@@ -227,7 +271,29 @@ export class GreenApiVoipClient extends EventTarget {
   };
 
   private onCallState = (payload: CallStatePayload) => {
-    this.dispatchEvent(new CustomEvent(Actions.CALL_STATE, { detail: payload }));
+    const WA_CALL_STATE_TO_STR = new Map<WACallState, CallState>([
+        // [0, 'none'],
+      [WACallState.WACallStateCalling, CallState.CALLING],
+      [WACallState.WACallStatePreacceptReceived, CallState.CALL_RECEIVED],
+        // [3, 'received_call'],
+        // [4, 'accept_sent'],
+        // [5, 'accept_received'],
+        [WACallState.WACallStateCallActive, CallState.IN_CALL],
+        // [8, 'received_call_without_offer'],
+    ])
+
+    const state = WA_CALL_STATE_TO_STR.get(payload.info.info.callInfo.call_state);
+
+    if (state == null) {
+      console.log(`payload.info.info.callInfo.call_state: ${payload.info.info.callInfo.call_state}`)
+      return;
+    }
+
+    this.dispatchEvent(new CustomEvent(Actions.CALL_STATE, {
+      detail: {
+        state: state,
+      }
+    }));
   };
 
   private onEndCall = (payload: EndCallPayload) => {
@@ -255,11 +321,11 @@ export class GreenApiVoipClient extends EventTarget {
    */
   public async startCall(phoneNumber: number, audio = true, video = true) {
     if (!this.options) {
-      throw new Error("idInstance and apiTokenInstance doesn't exists");
+      throw new AuthError();
     }
 
     if (this.call !== null) {
-      throw new Error('Already in call');
+      throw new AlreadyInCallError();
     }
 
     try {
@@ -274,7 +340,7 @@ export class GreenApiVoipClient extends EventTarget {
         new CustomEvent(Actions.LOCAL_STREAM_READY, { detail: this.localMediaStream })
       );
     } catch {
-      throw new Error('cannot get capture of audio or video');
+      throw new MediaStreamError();
     }
 
     const response = await call(phoneNumber, this.options);
@@ -284,7 +350,9 @@ export class GreenApiVoipClient extends EventTarget {
 
       this.call = new Call({ id: callId });
     } else {
-      throw new Error('Server error');
+      const { message } = await response.json();
+
+      throw new StartCallError(message);
     }
 
     // WARN: do not change callID because it`s any time is idInstance
@@ -293,7 +361,7 @@ export class GreenApiVoipClient extends EventTarget {
 
     if (!ack) {
       this.call = null;
-      throw new Error('signaling server error');
+      throw new SignalingError();
     }
   }
 
@@ -302,15 +370,15 @@ export class GreenApiVoipClient extends EventTarget {
    */
   public async acceptCall(audio = true, video = true) {
     if (!this.options) {
-      throw new Error("idInstance and apiTokenInstance doesn't exists");
+      throw new AuthError();
     }
 
     if (this.call === null) {
-      throw new Error('Not in call');
+      throw new NoActiveCallError();
     }
 
     if (this.incomingCallTimeout === null) {
-      throw new Error('Incoming call timeout');
+      throw new NoActiveIncomingCallError();
     }
 
     this.clearIncomingCallTimeout();
@@ -322,7 +390,7 @@ export class GreenApiVoipClient extends EventTarget {
         new CustomEvent(Actions.LOCAL_STREAM_READY, { detail: this.localMediaStream })
       );
     } catch (error) {
-      throw new Error('cannot get capture of audio or video');
+      throw new MediaStreamError();
     }
 
     this.socket.emit(Actions.INCOMING_CALL_ANSWER, { reject: false });
@@ -334,11 +402,11 @@ export class GreenApiVoipClient extends EventTarget {
    */
   public async rejectCall() {
     if (this.call === null) {
-      throw new Error('Not in call');
+      throw new NoActiveCallError();
     }
 
     if (this.incomingCallTimeout === null) {
-      throw new Error('Incoming call timeout');
+      throw new NoActiveIncomingCallError();
     }
 
     this.dispatchEvent(
@@ -352,11 +420,11 @@ export class GreenApiVoipClient extends EventTarget {
    */
   public async endCall(): Promise<boolean> {
     if (this.call === null) {
-      throw new Error('Not in call');
+      throw new NoActiveCallError();
     }
 
     if (this.incomingCallTimeout !== null) {
-      throw new Error('Incoming call');
+      throw new ActiveIncomingCallError();
     }
 
     try {

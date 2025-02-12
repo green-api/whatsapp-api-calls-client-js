@@ -1,1 +1,2 @@
-export * from './green-api-voip-client.ts';
+export * from './green-api-voip-client';
+export * from './common'

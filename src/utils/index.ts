@@ -1,1 +1,2 @@
-export * from './call.ts';
+export * from './call';
+export * from './timeout';

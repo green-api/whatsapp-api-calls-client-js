@@ -1,9 +1,48 @@
-declare interface CallActiveTime {
+export declare enum Actions {
+    JOIN = "join",
+    LEAVE = "leave",
+    ADD_PEER = "add-peer",
+    REMOVE_PEER = "remove-peer",
+    RELAY_SDP = "relay-sdp",
+    RELAY_ICE = "relay-ice",
+    ICE_CANDIDATE = "ice-candidate",
+    SESSION_DESCRIPTION = "session-description",
+    INCOMING_CALL = "incoming-call",
+    INCOMING_CALL_ANSWER = "incoming-call-answer",
+    START_INCOMING_CALL = "start-incoming-call",
+    END_CALL = "end-call",
+    CALL_STATE = "call-state",
+    LOCAL_STREAM_READY = "local-stream-ready",
+    REMOTE_STREAM_READY = "remote-stream-ready",
+    SOCKET_CONNECT = "socket-connect",
+    SOCKET_DISCONNECT = "socket-disconnect"
+}
+
+export declare class ActiveIncomingCallError extends Error {
+    constructor();
+}
+
+export declare interface AddPeerPayload {
+    peerID: string;
+    createOffer: boolean;
+}
+
+export declare class AlreadyInCallError extends Error {
+    constructor();
+}
+
+export declare const API_URL: any;
+
+export declare class AuthError extends Error {
+    constructor();
+}
+
+export declare interface CallActiveTime {
     sec: number;
     msec: number;
 }
 
-declare interface CallInfo {
+export declare interface CallInfo {
     callId: string;
     callerStatus: number | boolean;
     callActiveTime: CallActiveTime;
@@ -31,7 +70,7 @@ declare interface CallInfo {
     call_waiting_info: CallWaitingInfo;
 }
 
-declare interface CallLogInfo {
+export declare interface CallLogInfo {
     tx_bytes: string;
     rx_bytes: string;
     result: number;
@@ -44,7 +83,17 @@ declare interface CallLogInfo {
     initial_group_transaction_id: number;
 }
 
-declare interface CallStatePayload {
+export declare enum CallState {
+    CALLING = "CALLING",
+    CALL_RECEIVED = "CALL_RECEIVED",
+    IN_CALL = "IN_CALL"
+}
+
+export declare interface CallStateEventPayload {
+    state: CallState;
+}
+
+export declare interface CallStatePayload {
     info: {
         info: {
             callId: string;
@@ -54,7 +103,7 @@ declare interface CallStatePayload {
     };
 }
 
-declare interface CallWaitingInfo {
+export declare interface CallWaitingInfo {
     type: number;
     call_id: string;
     peer_count: number;
@@ -66,19 +115,15 @@ declare interface CallWaitingInfo {
     call_log_info: CallLogInfo;
 }
 
-declare interface EndCallPayload {
-    info: {
-        context: string;
-        incoming: boolean;
-    };
-    type: EndCallReasonEnum;
+export declare interface EndCallPayload {
+    incoming: boolean;
 }
 
-declare enum EndCallReasonEnum {
-    SELF,
-    REMOTE,
-    REJECTED,
-    TIMEOUT,
+export declare enum EndCallReasonEnum {
+    SELF = 0,
+    REMOTE = 1,
+    REJECTED = 2,
+    TIMEOUT = 3
 }
 
 export declare interface GreenApiVoipClient extends EventTarget {
@@ -138,33 +183,58 @@ export declare class GreenApiVoipClient extends EventTarget {
     private clearIncomingCallTimeout;
 }
 
-declare interface GreenApiVoipClientEventMap {
+export declare interface GreenApiVoipClientEventMap {
     'local-stream-ready': CustomEvent<MediaStream>;
     'remote-stream-ready': CustomEvent<MediaStream>;
     'end-call': CustomEvent<EndCallPayload>;
-    'call-state': CustomEvent<CallStatePayload>;
+    'call-state': CustomEvent<CallStateEventPayload>;
     'incoming-call': CustomEvent<IncomingCallPayload>;
     'socket-connect': CustomEvent<undefined>;
     'socket-disconnect': CustomEvent<SocketDisconnectPayload>;
 }
 
-declare interface GreenApiVoipClientInitOptions {
+export declare interface GreenApiVoipClientInitOptions {
     idInstance: string;
     apiTokenInstance: string;
     apiUrl: string;
 }
 
-declare interface IncomingCallPayload {
-    timeout: number;
-    info: { callId: string; wid: { device: number; domainType: number; type: number; user: string } };
+export declare interface IceCandidatePayload {
+    peerID: string;
+    iceCandidate: RTCIceCandidate;
 }
 
-declare interface Jid {
+export declare interface IncomingCallPayload {
+    timeout: number;
+    info: {
+        callId: string;
+        wid: {
+            device: number;
+            domainType: number;
+            type: number;
+            user: string;
+        };
+    };
+}
+
+export declare interface Jid {
     user: string;
     server: string;
 }
 
-declare interface ParticipantsEntity {
+export declare class MediaStreamError extends Error {
+    constructor();
+}
+
+export declare class NoActiveCallError extends Error {
+    constructor();
+}
+
+export declare class NoActiveIncomingCallError extends Error {
+    constructor();
+}
+
+export declare interface ParticipantsEntity {
     deviceRawJid: string;
     userJid: Jid;
     wid: Jid;
@@ -184,20 +254,30 @@ declare interface ParticipantsEntity {
     videoPreviewStarted: boolean;
 }
 
-declare interface SocketDisconnectPayload {
+export declare interface RemovePeerPayload {
+    peerID: string;
+}
+
+export declare interface SessionDescriptionPayload {
+    peerID: string;
+    sessionDescription: RTCSessionDescriptionInit;
+}
+
+export declare class SignalingError extends Error {
+    constructor();
+}
+
+export declare interface SocketDisconnectPayload {
     reason: SocketDisconnectReason;
     details?: unknown;
 }
 
-declare type SocketDisconnectReason =
-| 'io server disconnect'
-| 'io client disconnect'
-| 'ping timeout'
-| 'transport close'
-| 'transport error'
-| 'parse error';
+export declare type SocketDisconnectReason = 'io server disconnect' | 'io client disconnect' | 'ping timeout' | 'transport close' | 'transport error' | 'parse error';
 
-declare enum WACallState {
+export declare class StartCallError extends Error {
+}
+
+export declare enum WACallState {
     WACallStateNone = 0,
     WACallStateCalling = 1,
     WACallStatePreacceptReceived = 2,
@@ -206,7 +286,7 @@ declare enum WACallState {
     WACallStateAcceptReceived = 5,
     WACallStateCallActive = 6,
     WACallStateCallActiveElseWhere = 7,
-    WACallStateReceivedCallWithoutOffer = 8,
+    WACallStateReceivedCallWithoutOffer = 8
 }
 
 export { }
