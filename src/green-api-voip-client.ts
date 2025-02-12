@@ -127,8 +127,8 @@ export class GreenApiVoipClient extends EventTarget {
       return;
     }
 
-    // const pool = options.idInstance.slice(0, 4);
-    const socketHost = `http://localhost:3001`
+    const pool = options.idInstance.slice(0, 4);
+    const socketHost = `https://${pool}.voip.green-api.com`
     this.initSocket(socketHost);
 
     this.socket.auth = {
