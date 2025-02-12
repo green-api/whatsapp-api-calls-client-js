@@ -3,7 +3,13 @@ import 'styles/pages/call.css';
 import { FC, useEffect, useState } from 'react';
 import { Button, Flex, notification, Space } from 'antd';
 import { Navigate } from 'react-router-dom';
-import {EndCallPayload, CallStateEventPayload, WACallState, Actions} from '@green-api/whatsapp-api-calls-client-js';
+import {
+  EndCallPayload,
+  CallStateEventPayload,
+  WACallState,
+  Actions,
+  CallState
+} from '@green-api/whatsapp-api-calls-client-js';
 
 import {voipClient} from "../voip";
 
@@ -39,21 +45,18 @@ const Call: FC = () => {
     };
 
     const callStateHandler = (event: CustomEvent<CallStateEventPayload>) => {
-      console.log(event.detail)
-      return;
-
-      switch (event.detail.callState) {
-        case WACallState.WACallStateCalling: {
+      switch (event.detail.state) {
+        case CallState.CALLING: {
           setCallState('Соединение...');
-          break;
+          break
         }
-        case WACallState.WACallStatePreacceptReceived: {
+        case CallState.CALL_RECEIVED: {
           setCallState('Идёт дозвон...');
-          break;
+          break
         }
-        case WACallState.WACallStateCallActive: {
+        case CallState.IN_CALL: {
           setCallState('Активен');
-          break;
+          break
         }
       }
     };
