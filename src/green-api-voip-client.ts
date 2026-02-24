@@ -53,10 +53,18 @@ export class GreenApiVoipClient extends EventTarget {
   private incomingCallTimeout: ReturnType<typeof setTimeout> | null = null;
   private call: Call | null = null;
 
-  private iceServers = JSON.parse(
-    import.meta.env.VITE_RTC_ICE_SERVERS.toString().replace(/\n/g, '').replace(/\s/g, '')
-  )
 
+  private iceServers = (() => {
+    const raw = import.meta.env?.VITE_RTC_ICE_SERVERS;
+    console.log('raw', raw);
+    if (raw == null || raw === '') return [];
+    try {
+      return JSON.parse(String(raw).replace(/\n/g, '').replace(/\s/g, ''));
+    } catch {
+      return [];
+    }
+  })()
+  
   public constructor() {
     super();
   }
@@ -254,6 +262,7 @@ export class GreenApiVoipClient extends EventTarget {
    * Method sends request to start whatsapp call.
    */
   public async startCall(phoneNumber: number, audio = true, video = true) {
+    console.log('startCall', phoneNumber, audio, video);
     if (!this.options) {
       throw new Error("idInstance and apiTokenInstance doesn't exists");
     }

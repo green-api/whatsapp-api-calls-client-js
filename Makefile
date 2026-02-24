@@ -9,9 +9,9 @@ run-dev:
 	npm run dev
 
 
-# Run vanilla JS example
+# Run vanilla JS example (env из корня, режим developer → .env.developer)
 run-dev-v:
-	cd basic-usage-vanilla-js && npm install && npm run dev
+	cd basic-usage-vanilla-js && npm install && npm run dev -- --mode developer
 
 
 clean:

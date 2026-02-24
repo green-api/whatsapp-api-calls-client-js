@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "vite",
     "dev:external": "set VITE_EXTERNAL=true && vite",
+    "dev:production": "vite --mode production",
     "build": "tsc && vite build",
     "preview": "vite preview --host"
   },
