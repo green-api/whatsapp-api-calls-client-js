@@ -1,9 +1,9 @@
 import { GreenApiVoipClientInitOptions } from 'common';
 
 export const call = async (phoneNumber: number, options: GreenApiVoipClientInitOptions) => {
-  const { idInstance, apiTokenInstance } = options;
+  //const { idInstance, apiTokenInstance } = options;
 
-  const url = `${options.apiUrl}/waInstance${idInstance}/call/${apiTokenInstance}`;
+  const url = `${options.apiUrl}/webrtc/ws?idInstance=test-instance-1`;
 
   return fetch(url, {
     method: 'POST',

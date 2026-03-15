@@ -262,10 +262,9 @@ export class GreenApiVoipClient extends EventTarget {
    * Method sends request to start whatsapp call.
    */
   public async startCall(phoneNumber: number, audio = true, video = true) {
-    console.log('startCall', phoneNumber, audio, video);
-    if (!this.options) {
-      throw new Error("idInstance and apiTokenInstance doesn't exists");
-    }
+    // if (!this.options) {
+    //   throw new Error("idInstance and apiTokenInstance doesn't exists");
+    // }
 
     if (this.call !== null) {
       throw new Error('Already in call');
@@ -310,9 +309,9 @@ export class GreenApiVoipClient extends EventTarget {
    * Method accepts incoming call from whatsapp.
    */
   public async acceptCall(audio = true, video = true) {
-    if (!this.options) {
-      throw new Error("idInstance and apiTokenInstance doesn't exists");
-    }
+    // if (!this.options) {
+    //   throw new Error("idInstance and apiTokenInstance doesn't exists");
+    // }
 
     if (this.call === null) {
       throw new Error('Not in call');
