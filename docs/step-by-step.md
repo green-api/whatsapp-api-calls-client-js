@@ -292,7 +292,7 @@ Be aware that GreenAPI may impose certain rate limits on the number of requests 
 
 ## Creating the Main File: Integrating WhatsApp Voice Calls  
 
-In this section, we'll guide you through the process of creating the main file for your WhatsApp voice call integration using the `GreenApiVoipClient` class. This file will handle the key events such as incoming calls, accepting and rejecting calls, and managing peer connections. By the end of this guide, you'll have a working example that can manage WhatsApp voice calls effectively.
+In this section, we'll guide you through the process of creating the main file for your WhatsApp voice call integration. The library has two parts: `GreenApiVoipClient` wraps the REST methods (dial, accept, reject, hang up), and `CallsConnection` — created by `connectCalls()` — keeps a WebSocket to the server, reports the call state, and carries the WebRTC audio. By the end of this guide, you'll have a working example that can manage WhatsApp voice calls effectively.
 
 #### Step 1: Setting Up the Basic Structure  
 
@@ -301,139 +301,152 @@ First, let's create a new JavaScript file, `main.js` (or `main.ts` if you're usi
 ```javascript
 import { GreenApiVoipClient } from '@green-api/whatsapp-api-calls-client-js';
 
-// Initialize the GreenApiVoipClient
-const greenApiVoipClient = new GreenApiVoipClient();
-
-// Example initialization options, replace with your actual instance details
-const initOptions = {
+// Replace with your actual instance details
+const client = new GreenApiVoipClient({
   idInstance: 'your-id-instance',
   apiTokenInstance: 'your-api-token-instance',
-  apiUrl: 'your-api-url-voip' // usually https://pool.voip.green-api.com, where pool is first 4 symbols at idInstance
-};
-
-// Initialize the client
-greenApiVoipClient.init(initOptions).then(() => {
-  console.log('GreenApiVoipClient initialized and connected.');
-}).catch(error => {
-  console.error('Failed to initialize GreenApiVoipClient:', error);
+  apiUrl: 'your-api-url', // the API host of your instance, e.g. https://1234.api.green-api.com
 });
+
+// Open the calls connection: it reconnects on its own, and the server sends
+// the current call state right after connecting and on every change.
+const calls = client.connectCalls();
+
+calls.addEventListener('connect', () => console.log('Calls connection is up.'));
+calls.addEventListener('disconnect', (event) => console.log('Calls connection lost:', event.detail.reason));
+calls.addEventListener('error', (event) => console.error('Calls error:', event.detail.message));
 ```
+
+The instance must already be authorized (QR code scanned in the console); the library only deals with calls.
 
 #### Step 2: Handling Key Events
 
-The `GreenApiVoipClient` class emits several important events that you can listen to in order to manage the lifecycle of a call.
+`CallsConnection` is an `EventTarget` and emits several events that you can listen to in order to manage the lifecycle of a call.
 
-##### 1. **Incoming Call Event**  
+##### 1. **Call State**  
 
-When an incoming call is detected, the `INCOMING_CALL` event is fired. This event provides the `callId` and `wid` (WhatsApp ID of the user).
+The `state` event fires on every state change. `event.detail.state` is one of `idle`, `inc-call`, `out-call`, `on-call`; for the call states `event.detail.info` describes the call (`id`, `wid`, `name`). Drive your UI from it — the same event also arrives right after (re)connecting, so a page reloaded mid-call shows the correct state at once.
 
 ```javascript
-greenApiVoipClient.addEventListener('INCOMING_CALL', (event) => {
-  const { callId, wid } = event.detail.info;
-  console.log('Incoming call from:', wid.user, 'Call ID:', callId);
-  
-  // Automatically accept the call (or show UI to the user)
-  greenApiVoipClient.acceptCall().then(() => {
-    console.log('Call accepted.');
-  }).catch(error => {
-    console.error('Error accepting call:', error);
-  });
+calls.addEventListener('state', (event) => {
+  const { state, info } = event.detail;
+  console.log('Call state:', state, info ?? '');
+
+  // e.g. show "Ringing..." for 'out-call', the accept/reject buttons for 'inc-call'
 });
 ```
 
-##### 2. **Remote Stream Ready Event**  
+##### 2. **Incoming Call**  
 
-Once the connection is successfully established and the remote media stream is ready, the `REMOTE_STREAM_READY` event is triggered. You can use this event to start playing the remote audio stream.
+When an incoming call arrives, the `incoming-call` event fires once with the call info: `id`, `wid` (WhatsApp ID of the caller) and `name`. Accepting is a REST call, and the audio bridge is started afterwards — in this order (see Step 3 for why).
 
 ```javascript
-greenApiVoipClient.addEventListener('REMOTE_STREAM_READY', (event) => {
+calls.addEventListener('incoming-call', async (event) => {
+  const { id, wid, name } = event.detail;
+  console.log('Incoming call from:', name || wid, 'Call ID:', id);
+
+  // Automatically accept the call (or show UI to the user)
+  try {
+    await client.accept();
+    await calls.startAudioBridge();
+    console.log('Call accepted.');
+  } catch (error) {
+    console.error('Error accepting call:', error);
+  }
+});
+```
+
+##### 3. **Remote Stream Ready**  
+
+Once the WebRTC connection is established and the remote media stream is ready, the `remote-stream-ready` event is triggered. Use it to start playing the remote audio. (`local-stream-ready` fires earlier with your microphone stream, should you want to show a level meter.)
+
+```javascript
+calls.addEventListener('remote-stream-ready', (event) => {
   const remoteStream = event.detail;
-  
+
   // For example, attach the stream to an audio element to play the sound
   const audioElement = document.createElement('audio');
   audioElement.srcObject = remoteStream;
   audioElement.play();
-  
+
   console.log('Remote stream ready and playing.');
 });
 ```
 
-##### 3. **Ending a Call**  
+##### 4. **Ending a Call**  
 
-The `END_CALL` event is fired when a call ends. This could happen for various reasons, such as the remote party hanging up or a timeout.
+The `end-call` event fires when a call that was in progress is over. `event.detail.reason` says whose decision it was:
+
+* `call-ended` — the server ended the call: the other party hung up, a timeout expired, the call was answered on another device, and so on;
+* `connection-lost` — our WebSocket dropped during the call and could not be resumed.
+
+For `call-ended` the detail may also carry `cause` — the server's own word for what happened, passed through as is. Known values: `hangup`, `timeout`, `accepted_elsewhere` (the call was answered on another device of the same account, e.g. the phone), `rejected_elsewhere`, `no-media`, `connect-timeout`, `instance-gone`, `rejected:<reason>`. The vocabulary is open: show an unknown word as is rather than dropping it. `cause` is absent when the server gave no reason and always absent for `connection-lost`.
 
 ```javascript
-greenApiVoipClient.addEventListener('END_CALL', (event) => {
-  const { type, payload } = event.detail;
-  
-  if (type === 'TIMEOUT') {
+calls.addEventListener('end-call', (event) => {
+  const { reason, cause } = event.detail;
+
+  if (reason === 'connection-lost') {
+    console.log('Call ended: connection to the server was lost.');
+  } else if (cause === 'accepted_elsewhere') {
+    console.log('Call was answered on another device.');
+  } else if (cause === 'timeout') {
     console.log('Call ended due to timeout.');
-  } else if (type === 'REMOTE') {
-    console.log('Call ended by the remote party.');
-  } else if (type === 'REJECTED') {
-    console.log('Call was rejected.');
-  } else if (type === 'SELF') {
-    console.log('Call ended by the user.');
+  } else {
+    console.log('Call ended.', cause ? `Cause: ${cause}` : '');
   }
-  
+
   // Clean up the UI or reset the application state
 });
 ```
 
-##### 4. **Handling Call States**  
-
-The `CALL_STATE` event provides updates on the state of the call, such as ringing, connecting, or connected.
-
-```javascript
-greenApiVoipClient.addEventListener('CALL_STATE', (event) => {
-  const { state } = event.detail;
-  console.log('Call state changed:', state);
-  
-  // Update your UI based on the state, e.g., show "Ringing..." when the state is 'ringing'
-});
-```
+The library tears down the audio bridge itself when the call ends — no `stopAudioBridge()` call is needed here.
 
 #### Step 3: Making an Outgoing Call  
 
-To initiate a new call, use the `startCall` method.  
+To initiate a new call, use `dial` with the phone number (or a full `chatId` like `79991234567@c.us`), then start the audio bridge.
 
 ```javascript
-const phoneNumber = 'recipient-phone-number';  // Replace with the actual phone number
+const phoneNumber = '79991234567'; // Replace with the actual phone number
 
-greenApiVoipClient.startCall(phoneNumber, true, false).then(() => {
+try {
+  await client.dial(phoneNumber);
+  await calls.startAudioBridge();
   console.log('Call started.');
-}).catch(error => {
+} catch (error) {
   console.error('Error starting call:', error);
-});
+}
 ```
+
+The order matters: the browser audio leg on the server belongs to a call, so an offer without a call is rejected (`no active call`), and `startAudioBridge()` resolves only when the server has answered. A failed bridge does not cancel the call — the server keeps it, and you can call `startAudioBridge()` again (the same way you reattach audio after a page reload: if `calls.state.state` is `out-call`/`on-call` and `calls.hasAudioBridge` is `false`, just start the bridge, without a new `dial`/`accept`).
 
 #### Step 4: Ending or Rejecting a Call  
 
-To end a call that is currently active, use the `endCall` method. If you need to reject an incoming call, use the `rejectCall` method.
+To end a call that is currently active, use `hangUp`. To reject an incoming call, use `reject`. Both are REST calls; the resulting `idle` state and the `end-call` event arrive over the connection.
 
 ```javascript
 // End an active call
-greenApiVoipClient.endCall().then(success => {
-  if (success) {
-    console.log('Call ended successfully.');
-  } else {
-    console.log('Failed to end the call.');
-  }
-}).catch(error => {
+try {
+  await client.hangUp();
+  console.log('Call ended successfully.');
+} catch (error) {
   console.error('Error ending call:', error);
-});
+}
 
 // Reject an incoming call
-greenApiVoipClient.rejectCall().then(() => {
+try {
+  await client.reject();
   console.log('Call rejected.');
-}).catch(error => {
+} catch (error) {
   console.error('Error rejecting call:', error);
-});
+}
 ```
+
+When you are done with calls altogether, `calls.close()` stops the bridge and closes the WebSocket. `client.getCallState()` returns the current state over REST if you need it outside the connection.
 
 ### Conclusion  
 
-In this guide, we covered the creation of the main file for your WhatsApp voice call integration using the `GreenApiVoipClient` class. By handling key events such as incoming calls, remote streams, and call states, you can effectively manage the lifecycle of WhatsApp calls within your application. This setup provides a solid foundation for further customization and integration of additional features as needed.
+In this guide, we covered the creation of the main file for your WhatsApp voice call integration using `GreenApiVoipClient` and `CallsConnection`. By handling key events such as incoming calls, remote streams, call states and the end of a call with its cause, you can effectively manage the lifecycle of WhatsApp calls within your application. This setup provides a solid foundation for further customization and integration of additional features as needed.
 
 Feel free to expand on this example by adding user interface elements, error handling, and any other custom logic required for your specific use case.  
 

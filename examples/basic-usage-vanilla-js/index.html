@@ -1,49 +1,72 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
-
-    <link rel="stylesheet" href="style.css">
+    <title>GreenApiVoipClient demo</title>
+    <style>
+      body { font-family: -apple-system, sans-serif; max-width: 720px; margin: 20px auto; padding: 0 16px; }
+      fieldset { margin-bottom: 12px; }
+      label { display: inline-block; width: 150px; }
+      input[type=text], input[type=password] { width: 260px; }
+      button { margin: 2px 4px 2px 0; }
+      #state { font-weight: bold; font-size: 1.2em; padding: 2px 8px; border-radius: 4px; }
+      #state.incoming { background: #ffcc00; animation: blink 1s step-start infinite; }
+      @keyframes blink { 50% { opacity: 0.3; } }
+      #log {
+        white-space: pre-wrap; font-family: monospace; font-size: 12px;
+        background: #111; color: #0f0; height: 220px; overflow-y: auto; padding: 8px;
+      }
+      .row { margin-bottom: 6px; }
+      .hint { color: #666; font-size: 0.9em; margin: 0 0 8px; }
+    </style>
   </head>
   <body>
-    <section>
-      <p>Initialization</p>
-      <input id="apiUrl" placeholder="apiUrl">
-      <input id="idInstance" placeholder="idInstance">
-      <input id="apiTokenInstance" placeholder="apiTokenInstance">
-      <button id="connectButton">connect</button>
-      <button id="disconnectButton" disabled>disconnect</button>
-    </section>
+    <h2>GreenApiVoipClient — example</h2>
 
-    <section style="margin-top: 16px;">
-      <p>Outgoing call</p>
-      <input id="phoneNumber" placeholder="phone number" disabled>
-      <button id="startCallButton" disabled>start call</button>
-    </section>
+    <fieldset id="connectFieldset">
+      <legend>Connection</legend>
+      <p class="hint">The instance must already be authorized — this demo only deals with calls.</p>
+      <div class="row"><label>apiUrl</label><input type="text" id="apiUrl"></div>
+      <div class="row"><label>idInstance</label><input type="text" id="idInstance"></div>
+      <div class="row"><label>apiTokenInstance</label><input type="password" id="apiTokenInstance"></div>
+      <div class="row"><button id="connectButton">Connect</button></div>
+    </fieldset>
 
-    <section>
-      <p>Current call</p>
-      <button id="endCallButton" disabled>end call</button>
-    </section>
+    <fieldset id="stateFieldset" style="display: none;">
+      <legend>State</legend>
+      <div>Call: <span id="state">-</span></div>
+      <button id="resetButton">Disconnect</button>
+    </fieldset>
 
-    <section style="margin-top: 16px;">
-      <audio id="remoteAudio" autoplay playsinline muted="false" style="filter: blur(30px);"></audio>
-    </section>
+    <fieldset id="dialFieldset" style="display: none;">
+      <legend>Outgoing call</legend>
+      <div class="row">
+        <label>Number / chatId</label><input type="text" id="dialTarget" placeholder="79991234567">
+        <button id="dialButton">Dial</button>
+      </div>
+    </fieldset>
 
-    <div id="incoming-call-portal">
-      <section class="incoming-call-modal">
-        <section>
-          Incoming call: <span id="incoming-call-phone">79836200181</span>
-        </section>
-        <sectio>
-          <button class="incoming-call-reject" id="rejectCallButton">reject</button>
-          <button class="incoming-call-accept" id="acceptCallButton">accept</button>
-        </sectio>
-      </section>
-    </div>
+    <fieldset id="incomingFieldset" style="display: none;">
+      <legend>Incoming call</legend>
+      <div id="incomingCallInfo"></div>
+      <button id="acceptButton">Accept</button>
+      <button id="rejectButton">Reject</button>
+    </fieldset>
+
+    <fieldset id="activeCallFieldset" style="display: none;">
+      <legend>Current call</legend>
+      <button id="connectMediaButton" style="display: none;">Join the call audio</button>
+      <button id="hangUpButton">Hang up</button>
+      <audio id="remoteAudio" autoplay playsinline></audio>
+    </fieldset>
+
+    <fieldset>
+      <legend>Log</legend>
+      <div class="row"><button id="clearLogButton">Clear log</button></div>
+      <div id="log"></div>
+    </fieldset>
 
     <script type="module" src="/index.js"></script>
   </body>
