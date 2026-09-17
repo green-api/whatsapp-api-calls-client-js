@@ -1,25 +1,183 @@
-.container {
+.call-card {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-7) var(--space-5);
+  text-align: center;
+}
+
+.call-card__avatar {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--brand-soft);
+  color: var(--brand-strong);
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* A quiet pulse while the call is still being set up: something has to say the screen is
+   alive when there is nothing else moving on it yet. */
+.call-card__avatar--ringing {
+  animation: call-pulse 1.8s ease-out infinite;
+}
+
+@keyframes call-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 152, 5, 0.28);
+  }
+  70% {
+    box-shadow: 0 0 0 22px rgba(0, 152, 5, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 152, 5, 0);
+  }
+}
+
+.call-card__name {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Who is on the call, as one block: the card's own gap is meant for its sections, and name,
+   address and status are three lines of one answer. */
+.call-card__who {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.call-card__address {
+  color: var(--ink-muted);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.call-card__status {
+  color: var(--ink-muted);
+  font-size: 14px;
+}
+
+.call-card__timer .ant-statistic-content {
+  font-size: 30px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.call-card__waves {
+  display: flex;
+  gap: var(--space-4);
+  width: 100%;
   justify-content: center;
   flex-wrap: wrap;
-  row-gap: 10px;
 }
 
-.media-wrapper {
+.wave {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: center;
+  margin: 0;
+}
+
+.wave__canvas {
+  width: 240px;
+  height: 72px;
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.wave__label {
+  font-size: 12px;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.call-card__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+/* antd sizes a circle button by its content; a call control has to be a disc, so the box
+   is pinned in both directions. */
+.call-card__hangup {
+  width: 64px !important;
+  height: 64px !important;
+  min-width: 64px !important;
+  padding: 0;
+  border-radius: 50% !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The same disc as hang-up; only the colour separates them, red being the irreversible one. */
+.call-card__control.ant-btn {
+  width: 64px !important;
+  height: 64px !important;
+  min-width: 64px !important;
+  padding: 0;
+  border-radius: 50% !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-muted);
+}
+
+.call-card__control.ant-btn:hover {
+  background: var(--surface-sunken) !important;
+  color: var(--ink) !important;
+  border-color: var(--line) !important;
+}
+
+.call-card__control.ant-btn:disabled,
+.call-card__control.ant-btn:disabled:hover {
+  background: var(--surface) !important;
+  border-color: var(--line) !important;
+  color: var(--ink-faint) !important;
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* Muted is a state to notice, not a button to find: it stays filled for as long as it
+   holds. */
+.call-card__control--on.ant-btn,
+.call-card__control--on.ant-btn:hover {
+  background: var(--ink) !important;
+  border-color: var(--ink) !important;
+  color: var(--surface) !important;
+}
+
+.wave__label--muted {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* The audio elements carry the sound; nothing to look at, but they must stay in the DOM. */
+.call-audio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.wave__canvas-el {
+  display: block;
   width: 100%;
   height: 100%;
-  text-align: center;
-  overflow: hidden;
-  position: relative;
-  background-color: black;
-}
-
-.stream-visualizer {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 2rem;
-  font-weight: bold;
-  color: white;
 }

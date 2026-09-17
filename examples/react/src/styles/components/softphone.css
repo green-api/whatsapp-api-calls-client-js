@@ -1,0 +1,164 @@
+.softphone {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-4);
+}
+
+.softphone__display {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  width: 100%;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: var(--space-2);
+}
+
+/* The country sits inside the display, not above it: a dial code detached from the number
+   it belongs to is the easiest way to send a call to the wrong country. */
+/* Only the flag and the dial code: the country name belongs in the list, not in a field
+   that has to leave room for a fifteen-digit number. */
+.softphone__country.ant-select {
+  flex: none;
+  width: 74px;
+}
+
+.softphone__country .ant-select-selector {
+  border: none !important;
+  background: transparent !important;
+  padding-inline: 0 !important;
+  box-shadow: none !important;
+}
+
+.softphone__country-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.softphone__flag {
+  font-size: 17px;
+  line-height: 1;
+}
+
+/* The number is the one thing on this card that must be read at a glance, so it is big,
+   monospaced by digit width, and carries no box of its own to compete with the keys. */
+.softphone__number {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  padding: var(--space-2) 0;
+}
+
+.softphone__number::placeholder {
+  font-size: 16px;
+  letter-spacing: normal;
+  color: var(--ink-faint);
+}
+
+.softphone__erase {
+  border: none;
+  background: transparent;
+  color: var(--ink-faint);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  flex: none;
+  transition: background-color 0.16s ease, color 0.16s ease;
+}
+
+.softphone__erase:hover:not(:disabled) {
+  background: var(--surface-sunken);
+  color: var(--ink);
+}
+
+.softphone__erase:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.softphone__keys {
+  display: grid;
+  grid-template-columns: repeat(3, 72px);
+  gap: var(--space-3);
+}
+
+.softphone__key {
+  height: 60px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  transition: background-color 0.12s ease, transform 0.06s ease;
+}
+
+.softphone__key:hover {
+  background: var(--brand-soft);
+}
+
+.softphone__key:active {
+  transform: scale(0.96);
+  background: var(--brand-soft);
+}
+
+.softphone__digit {
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.softphone__letters {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+  min-height: 11px;
+}
+
+.softphone__call.ant-btn {
+  width: 64px !important;
+  height: 64px !important;
+  min-width: 64px !important;
+  padding: 0;
+  border-radius: 50% !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* A LID has no flag to show, so the chip carries the word instead — and stays the same
+   width, or the number would jump sideways when the kind changes. */
+.softphone__country--lid .softphone__country-value {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--brand-strong);
+  font-weight: 600;
+}
+
+.softphone__key:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.softphone__key:disabled:hover {
+  background: var(--surface);
+}

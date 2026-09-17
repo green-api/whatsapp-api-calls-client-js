@@ -6,7 +6,6 @@ import BaseLayout from 'components/layouts/base-layout';
 import Auth from 'pages/auth';
 import Call from 'pages/call';
 import Main from 'pages/main';
-import Profile from 'pages/profile';
 
 const routerConfig = [
   {
@@ -22,7 +21,6 @@ const routerConfig = [
     element: <BaseLayout />,
     children: [
       { path: Routes.MAIN, element: <Main /> },
-      { path: Routes.PROFILE, element: <Profile /> },
       { path: Routes.CALL, element: <Call /> },
     ],
   },

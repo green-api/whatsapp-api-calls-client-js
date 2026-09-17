@@ -1,17 +1,22 @@
 .logo-wrapper {
   display: flex;
-  padding: 15px 0;
+  align-items: center;
 }
 
 .logo {
-  display: inline-block;
-  padding: 7px 15px;
-  transition: .5s background-color;
-  overflow: hidden;
-  white-space: nowrap;
-  margin: 0 auto;
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.18s ease;
+}
 
-  &:hover {
-    background: #f0f2f5;
-  }
+.logo:hover {
+  background: var(--surface-sunken);
+}
+
+.logo img,
+.logo svg {
+  display: block;
+  height: 28px;
 }

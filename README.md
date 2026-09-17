@@ -16,169 +16,187 @@
 
 - [Документация на русском языке](./docs/README_ru.md)
 
-This library helps you easily create a JavaScript/TypeScript application to receive incoming calls and start outgoing calls via WhatsApp using the API service [green-api.com](https://green-api.com/en/). To use this library, you need to obtain your `ID_INSTANCE` and `API_TOKEN_INSTANCE` from [control panel](](https://console.green-api.com)). The library is free for developers.
+This library lets a JavaScript or TypeScript application place and receive WhatsApp voice
+calls through the API service [green-api.com](https://green-api.com/en/). It talks to the
+calls API over a WebSocket and carries the audio over WebRTC, so it runs in the browser with
+nothing to install alongside it. To use it you need an `ID_INSTANCE` and an
+`API_TOKEN_INSTANCE` from the [control panel](https://console.green-api.com). The library is
+free for developers.
 
-## API
+The repository ships a full client application built on the library — see below. It is the
+place to look first: every feature described in this README is used there in context.
 
-The API is based on WebSockets and the WebRTC protocol.
+## The React client
 
-Pros of using WebRTC:
+`examples/react` is a working softphone, and the reference implementation for this library.
 
-* Availability in browsers;
-* Low latency;
-* Congestion control;
-* Mandatory encryption.
+It covers what a calls application actually has to do:
 
-## Installing & Importing
+- **Authorization** with `idInstance` / `apiTokenInstance`, kept across reloads.
+- **Dialling** by phone number — country picker, per-country formatting as you type — or by
+  LID, for a peer whose number is not known.
+- **Contacts** with avatars and search, showing both of a peer's addresses, and dialling
+  straight from a row.
+- **Incoming calls**: a prompt with the caller's avatar and name, accept and reject.
+- **The call screen**: who you are talking to, how long for, live level meters for both
+  directions, microphone mute, hang up.
+- **Ringing**: a ringback while the far end has not picked up, a ring tone for an incoming
+  call, both synthesised — no audio files.
+- **Connection state**, including a reconnect in the middle of a call.
 
-Library supports both browser environment without package managers and Node/Webpack apps with package manager that can
-handle `require` or `import` module expressions.
+### Running it
 
-**Installing for webpack and npm based apps:**
+```shell
+cd examples/react
+npm install
+npm run dev
+```
+
+`npm install` is needed only the first time. Vite prints the address it is serving on; open
+it, sign in with the credentials from the [control panel](https://console.green-api.com/),
+and the instance must already be authorized there by scanning the QR code — this library
+deals with calls only.
+
+### How it is put together
+
+The parts worth reading first, in the order a call goes through them:
+
+| File | What it holds |
+| --- | --- |
+| `src/voip/index.ts` | The one client and connection for the whole app, plus the last streams and connection status, so a component that mounts late still finds them |
+| `src/hooks/useCallsConnection.ts` | That connection as React state |
+| `src/components/softphone.tsx` | Dialling: country or LID, formatting, the keypad |
+| `src/common/address.ts` | The address model — a phone number and a LID are alternatives, and only one of them is what gets dialled |
+| `src/components/incoming-call.tsx` | The incoming prompt |
+| `src/pages/call.tsx` | The call screen: peer, timer, meters, mute, hang up |
+| `src/hooks/useVoip.ts` | Streams and the audio elements that play them, wired in both directions |
+| `src/voip/ringing.ts` | The ringback and ring tones |
+
+Three things in there are not obvious from the API, and each one is a silent failure if you
+get it wrong:
+
+1. **Signalling first, audio second.** `dial()` or `accept()` must resolve before
+   `startAudioBridge()`: the server rejects an offer that belongs to no call.
+2. **The bridge comes up before the call screen does.** `local-stream-ready` and
+   `remote-stream-ready` have already fired by the time the audio elements mount, so the
+   streams are remembered rather than only listened for. Subscribing alone leaves the call
+   silent.
+3. **Mute is local, and it has to be re-applied.** The track handed out with
+   `local-stream-ready` is the one added to the peer connection, so `track.enabled = false`
+   is what the peer stops hearing. After a socket drop mid-call the library raises the bridge
+   again with a *new* microphone and without ending the call — a mute set before the drop
+   must be put back on the new track, or the screen goes on claiming a mute that no longer
+   holds.
+
+## Installing the library
+
+The library works both in a bundled app and in a plain browser page.
 
 ```shell
 npm i @green-api/whatsapp-api-calls-client-js
 ```
 
-**Way to import the library in a project:**
-
-Using ES6 JavaScript or TypeScript
 ```javascript
 import { GreenApiVoipClient } from '@green-api/whatsapp-api-calls-client-js';
 ```
 
-**Import & installing for vanilla JavaScript modify index.html:**
-```html
-<script src="https://unpkg.com/@green-api/whatsapp-api-client/lib/whatsapp-api-client.min.js"></script>
-```  
+## Using it
 
-## Authentication
+The library has two parts. `GreenApiVoipClient` wraps the REST methods — dial, accept,
+reject, hang up. `CallsConnection`, returned by `connectCalls()`, holds the WebSocket: it
+reports the call state, announces incoming calls, and carries the WebRTC audio.
 
-To use the library, you need a GREEN-API account on [green-api.com](https://green-api.com/en) and authentication completed by mobile WhatsApp app. To register the account, you must proceed to the [control panel](https://console.green-api.com/). After registering you get unique pair of `ID_INSTANCE` and `API_TOKEN_INSTANCE` keys.
-
-WhatsApp mobile app authentication may be achieved by [control panel](https://console.green-api.com/). You need to
-scan QR-code generated within the control panel.
-
-## Examples
-
-The GreenApiVoipClient class emits several important events that you can listen to in order to manage the lifecycle of a call.
-
-### Initialization
+### Opening the connection
 
 ```javascript
 import { GreenApiVoipClient } from '@green-api/whatsapp-api-calls-client-js';
 
-// Initialize the GreenApiVoipClient
-const greenApiVoipClient = new GreenApiVoipClient();
-
-// Example initialization options, replace with your actual instance details
-const initOptions = {
+const client = new GreenApiVoipClient({
   idInstance: 'your-id-instance',
   apiTokenInstance: 'your-api-token-instance',
-  apiUrl: 'your-api-url-voip' // usually https://pool.voip.green-api.com, where pool is first 4 symbols at idInstance
-};
+  apiUrl: 'your-api-url', // the API host of your instance, e.g. https://1234.api.green-api.com
+});
 
-// Initialize the client
-greenApiVoipClient.init(initOptions).then(() => {
-  console.log('GreenApiVoipClient initialized and connected.');
-}).catch(error => {
-  console.error('Failed to initialize GreenApiVoipClient:', error);
+// Reconnects on its own. The current call state arrives right after connecting and on
+// every change, so a page reloaded mid-call shows the right thing at once.
+const calls = client.connectCalls();
+
+calls.addEventListener('connect', () => console.log('Calls connection is up.'));
+calls.addEventListener('disconnect', (event) => console.log('Lost:', event.detail.reason));
+calls.addEventListener('state', (event) => {
+  const { state, info } = event.detail; // 'idle' | 'inc-call' | 'out-call' | 'on-call'
+  console.log('Call state:', state, info ?? '');
 });
 ```
 
-### Handling Incoming Calls
+### Receiving a call
 
 ```javascript
-const callBtns = document.getElementById('initBtns');
-const audioElement = document.createElement('audio'); // audio element to play the sound
+const audio = document.querySelector('audio');
 
-// Subscribe to the incoming call event and get call info from WhatsApp
-greenApiVoipClient.addEventListener('incoming-call', (event) => {
-  console.log(event.detail.info);
+calls.addEventListener('incoming-call', async (event) => {
+  const { id, wid, name } = event.detail;
+  console.log('Incoming call from', name || wid);
 
-  // Render accept and reject call buttons
-  const acceptCallBtn = document.createElement('button');
-  const rejectCallBtn = document.createElement('button');
-  
-  acceptCallBtn.addEventListener('click', async () => {
-    await greenApiVoipClient.acceptCall();
-  });
-  
-  rejectCallBtn.addEventListener('click', async () => {
-    await greenApiVoipClient.rejectCall();
-  });
-
-  callBtns.append(acceptCallBtn, rejectCallBtn);
+  // Show your own UI here; this accepts immediately.
+  await client.accept();
+  await calls.startAudioBridge();
 });
 
-greenApiVoipClient.addEventListener('remote-stream-ready', (event) => {
-  // Assign remote media stream value from event so you can hear the voice of the other call participant
-  audioElement.srcObject = event.detail;
+calls.addEventListener('remote-stream-ready', (event) => {
+  audio.srcObject = event.detail;
 });
 ```
 
-### Making Outgoing Calls
+### Placing a call
 
 ```javascript
-const callBtn = document.getElementById('call');
-const audioElement = document.getElementById('remote'); // audio element to play the sound
+// A phone number, a chatId such as `79991234567@c.us`, or a LID such as `1062110180230@lid`.
+await client.dial('79991234567');
+await calls.startAudioBridge();
+```
 
-callBtn.addEventListener('click', async () => {
-  try {
-    await greenApiVoipClient.startCall('Receiver phone number');
-  } catch (err) {
-    console.error(err);
-  }
+A failed bridge does not cancel the call: the server keeps it, and `startAudioBridge()` can
+be called again. That is also how audio is reattached after a reload — if `calls.state.state`
+is `out-call` or `on-call` and `calls.hasAudioBridge` is `false`, start the bridge without
+dialling again.
+
+### Ending a call
+
+```javascript
+await client.hangUp(); // an active call
+await client.reject(); // an incoming one
+
+calls.addEventListener('end-call', (event) => {
+  const { reason, cause } = event.detail;
+  // reason: 'call-ended' (the server ended it) or 'connection-lost'
+  // cause: the server's own word — 'hangup', 'timeout', 'accepted_elsewhere', …
+  console.log('Call ended.', cause ?? '');
 });
-
-greenApiVoipClient.addEventListener('remote-stream-ready', (event) => {
-  // Assign remote media stream value from event so you can hear the voice of the other call participant
-  audioElement.srcObject = event.detail;
-});
-```  
-
-## Demo examples on Vanilla JS & React
-
-You can find our demo examples:
-* [Vanilla JS](./examples/basic-usage-vanilla-js/)
-* [React JS](./examples/react/)
-
-Download the required example from the repository at the link. Then  following steps in the project folder:
-
-```shell
-npm install
-
-npm run dev
-```
-`npm install` runs only once during the first installation.
-
-After that, the client web interface will be available for you at the specified address, for example:
-
-```
-npm run dev
-
-> vite-project@0.0.0 dev
-> vite
-
-VITE v5.2.11 ready in 969 ms
-
-➜ Local: http://localhost:80/
-➜ Network: use --host to expose
-➜ press h + enter to show help
 ```
 
-Open the link in your preferred browser. For work with the app, use `idInstance` and `apiTokenInstance` from [control panel](https://console.green-api.com/). After authorization, you can receive incoming calls and make outgoing ones.
+The library tears the audio bridge down itself when a call ends. `calls.close()` stops the
+bridge and closes the socket when you are done with calls altogether.
 
-To stop the server, press `Ctrl + C` and after press the `Y` button in your terminal.
+## Other examples
+
+- [Vanilla JS](./examples/basic-usage-vanilla-js/) — the same calls without a framework, for
+  reading the API on its own.
+
+Both examples are started the same way: `npm install`, then `npm run dev`.
 
 ## Documentation
 
-For more detailed information, please refer to the [Step by step guide](./docs/step-by-step.md).
+The [step-by-step guide](./docs/step-by-step.md) goes through the whole integration, from
+setting up the project to handling every event.
 
-## Third-party Libraries
+## Third-party libraries
 
-- [socket.io-client](https://www.npmjs.com/package/socket.io-client) - WebSocket library
-- [freeice](https://www.npmjs.com/package/freeice) - Free random STUN or TURN server for your WebRTC application
+The library itself has no runtime dependencies. The React client uses
+[React](https://react.dev/), [Redux Toolkit](https://redux-toolkit.js.org/),
+[React Router](https://reactrouter.com/), [Ant Design](https://ant.design/),
+[MUI icons](https://mui.com/material-ui/material-icons/) and
+[libphonenumber-js](https://www.npmjs.com/package/libphonenumber-js).
 
 ## License
 

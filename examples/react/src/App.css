@@ -1,82 +1,117 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+/* Design tokens. Everything visual in the example refers to these, so a colour or a
+   radius is changed in one place rather than hunted through components. */
+:root {
+  --brand: #009805;
+  --brand-strong: #007a04;
+  --brand-soft: #e8f6e9;
+
+  --danger: #e5484d;
+  --danger-soft: #fdeaea;
+
+  --ink: #0f1c14;
+  --ink-muted: #5c6b61;
+  --ink-faint: #8b978f;
+
+  --surface: #ffffff;
+  --surface-sunken: #f4f6f5;
+  --line: #e6eae7;
+
+  --radius-sm: 10px;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(15, 28, 20, 0.06);
+  --shadow: 0 4px 16px rgba(15, 28, 20, 0.07);
+  --shadow-lg: 0 12px 40px rgba(15, 28, 20, 0.12);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --content-width: 720px;
+
+  /* Kept for the antd theme, which reads these by name. */
+  --main-background: #ffffff;
+  --second-background: var(--surface-sunken);
+  --border-color: var(--line);
+  --primary-color: var(--brand);
+  --link-color: var(--brand);
+  --link-hover-color: var(--brand-strong);
 }
 
-html, body {
-    height: 100%;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+  color: var(--ink);
+  background: var(--surface-sunken);
+  -webkit-font-smoothing: antialiased;
 }
 
 .app {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--surface-sunken);
 }
 
-.default-theme {
-
-    /*--main-background: #fff;*/
-    /*--second-background: #f0f2f5;*/
-    --sidebar-trigger-background: #001529;
-
-    --primary-color: #009805;
-
-    --border-color: #d9d9d9;
-
-    --register-form-shadow-color: rgba(0, 0, 0, 0.4);
-
-    --light-primary-color: hsla(122, 39%, 49%, 1);
-
-    --link-color: mediumseagreen;
-    --link-hover-color: #009805;
-
-    --authorized-status-color: #4CAE4FFF;
-    --not-authorized-status-color: rgb(255, 39, 39);
-    --starting-status-color: #1890ff;
-    --warning-status-color: #ff9100;
-
-    --second-color-hover: #002cd5;
-
-    --scrollbar-color: mediumseagreen;
-
-    --price-color: mediumseagreen;
+/* One column down the middle: the demo is a single task, not a dashboard. */
+.page {
+  width: 100%;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
-Button.ant-btn-primary {
-    background-color: var(--light-primary-color);
-    border-color: var(--light-primary-color);
-    box-shadow: 0 0 4px #999;
-    outline: none;
-    background-position: center;
-    transition: background 0.8s;
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
 }
 
-
-Button.ant-btn-primary:hover, Button.ant-btn-primary:focus {
-    background: #009805 radial-gradient(circle, transparent 1%, var(--light-primary-color) 1%) center/15000%;
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
 }
 
-
-Button.ant-btn-primary:not(:disabled):active {
-    background-color: rgb(46, 107, 48);
-    background-size: 100%;
-    transition: background 0s;
+/* antd leaves its own focus ring on; a single consistent one reads calmer. */
+.ant-btn:focus-visible,
+.ant-input:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
 }
 
-
-Button.simpleType:not(:disabled):hover, Button.simpleType:focus {
-    background-color: #009805;
+.ant-btn-primary {
+  box-shadow: none;
 }
 
-
-Button.simpleType:disabled:hover {
-    background: rgba(0, 0, 0, 0.04);
+.ant-btn-primary:not(:disabled):hover {
+  background: var(--brand-strong) !important;
 }
 
-
-Button.extend {
-    padding: 0 40px;
-    margin: 5px 0;
+.ant-list-pagination {
+  padding: var(--space-3) var(--space-4) 0;
+  margin: 0 !important;
 }

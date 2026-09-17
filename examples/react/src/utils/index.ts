@@ -17,19 +17,19 @@ export const getErrorMessage = (error: unknown): string | null => {
 
   switch (error.status) {
     case 466:
-      errorMessage = 'Исчерпано кол-во использований метода, попробуйте пересоздать instance.';
+      errorMessage = 'Method usage limit reached, try recreating the instance.';
       break;
 
     case 429:
-      errorMessage = 'Слишком много запросов';
+      errorMessage = 'Too many requests';
       break;
 
     case 'FETCH_ERROR':
-      errorMessage = 'Проверьте правильность введенных данных';
+      errorMessage = 'Check that the data you entered is correct';
       break;
 
     default:
-      errorMessage = 'Что-то пошло не так, попробуйте еще раз.';
+      errorMessage = 'Something went wrong, please try again.';
   }
 
   return errorMessage;

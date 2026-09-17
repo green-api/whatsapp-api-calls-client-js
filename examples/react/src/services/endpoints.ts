@@ -1,4 +1,5 @@
 import {
+  GetAvatarResponse,
   GetContactsResponse,
   GetStateInstanceResponse,
   GetWaSettingsResponse,
@@ -23,8 +24,26 @@ export const endpoints = baseAPI.injectEndpoints({
         url: `${apiUrl}/waInstance${idInstance}/getWaSettings/${apiTokenInstance}`,
       }),
     }),
+    /**
+     * The peer's photo. Asked per chat, so it is cached by chatId: a contact scrolled past
+     * twice is fetched once, and the answer is reused by the call screen.
+     *
+     * A peer with no photo, or one who hides it, answers `available: false` — that is the
+     * ordinary case, not an error, and the caller falls back to initials.
+     */
+    getAvatar: builder.query<GetAvatarResponse, RequestParams & { chatId: string }>({
+      query: ({ idInstance, apiTokenInstance, apiUrl, chatId }) => ({
+        url: `${apiUrl}/waInstance${idInstance}/getAvatar/${apiTokenInstance}`,
+        method: 'POST',
+        body: { chatId },
+      }),
+    }),
   }),
 });
 
-export const { useGetContactsQuery, useLazyGetStateInstanceQuery, useGetWaSettingsQuery } =
-  endpoints;
+export const {
+  useGetContactsQuery,
+  useLazyGetStateInstanceQuery,
+  useGetWaSettingsQuery,
+  useGetAvatarQuery,
+} = endpoints;

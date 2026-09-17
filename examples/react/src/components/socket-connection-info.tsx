@@ -1,26 +1,22 @@
 import { FC } from 'react';
 
-import { Flex, Space } from 'antd';
-
 import { useAppSelector } from 'hooks/redux';
 import { selectSocketConnectionInfo } from 'store/slices/call-slice';
 import 'styles/components/socket-connection-info.css';
 
+/** The live state of the calls socket: without it nothing rings and nothing dials. */
 const SocketConnectionInfo: FC = () => {
-  const { connected, reason, details } = useAppSelector(selectSocketConnectionInfo);
+  const { connected, reason, permanent } = useAppSelector(selectSocketConnectionInfo);
 
   return (
-    <Space direction="vertical">
-      <Flex align="center" gap={3}>
-        Socket connection status:
-        <span
-          className={`statusCircle ${connected ? 'statusCircle__auth' : 'statusCircle__notAuth'}`}
-        ></span>
-        {connected ? 'connected' : 'disconnected'}
-      </Flex>
-      {reason && <span>reason: {reason}</span>}
-      {(details as any) && <pre>{JSON.stringify(details, null, 2)}</pre>}
-    </Space>
+    <span className="status-pill">
+      <span
+        className={`status-pill__dot ${connected ? 'status-pill__dot--on' : 'status-pill__dot--off'}`}
+      />
+      {connected ? 'Connected' : 'Disconnected'}
+      {!connected && reason && <span className="status-pill__note">· {reason}</span>}
+      {permanent && <span className="status-pill__note">· will not reconnect</span>}
+    </span>
   );
 };
 

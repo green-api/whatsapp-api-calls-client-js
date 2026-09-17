@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 
-const WIDTH = 308;
-const HEIGHT = 231;
+const WIDTH = 240;
+const HEIGHT = 72;
 const SMOOTHING = 0.8;
 const FFT_SIZE = 2048;
 
@@ -68,7 +68,7 @@ const StreamVisualizer: React.FC<StreamVisualizerProps> = ({ remoteStream }) => 
         const percent = value / 256;
         const height = HEIGHT * percent;
         const offset = HEIGHT - height - 1;
-        drawContext!.fillStyle = '#4CAE4FFF';
+        drawContext!.fillStyle = '#009805';
         drawContext!.fillRect(i * barWidth, offset, 1, 2);
       }
 
@@ -82,7 +82,7 @@ const StreamVisualizer: React.FC<StreamVisualizerProps> = ({ remoteStream }) => 
     };
   }, [remoteStream]);
 
-  return <canvas ref={canvasRef} />;
+  return <canvas ref={canvasRef} className="wave__canvas-el" />;
 };
 
 export default StreamVisualizer;

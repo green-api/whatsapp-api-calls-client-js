@@ -5,12 +5,82 @@
   justify-content: center;
 }
 
-.main-page {
+.main-page__top {
   display: flex;
-  align-items: flex-start;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
 }
 
-.contact-info {
-  font-size: 20px;
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-5);
+  text-align: center;
+}
+
+.profile-card__rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 340px;
+}
+
+.profile-card__row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 15px;
+}
+
+.profile-card__row:last-child {
+  border-bottom: none;
+}
+
+.profile-card__key {
+  color: var(--ink-faint);
+}
+
+.profile-card__value {
+  font-weight: 500;
+  word-break: break-all;
+}
+
+/* Two columns: the dialler is the task, the contacts are the material for it. On a narrow
+   screen the dialler stays on top for the same reason. */
+/* Both columns are sized, and the pair is centred as one block. A stretching column would
+   park the dialler off to one side and leave a hole where the eye expects the middle. */
+.page--wide {
+  max-width: 720px;
+}
+
+.main-page__columns {
+  display: grid;
+  grid-template-columns: minmax(0, 320px) 340px;
+  justify-content: center;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.main-page__dialler {
+  display: flex;
+  min-width: 0;
+}
+
+.main-page__contacts {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+@media (max-width: 740px) {
+  .main-page__columns {
+    grid-template-columns: minmax(0, 340px);
+  }
 }

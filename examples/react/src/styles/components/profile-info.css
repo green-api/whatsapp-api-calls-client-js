@@ -1,0 +1,51 @@
+.profile-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 280px;
+}
+
+.profile-panel--loading {
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+}
+
+.profile-panel__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+
+.profile-panel__who {
+  min-width: 0;
+}
+
+.profile-panel__phone {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.profile-panel__state {
+  font-size: 13px;
+  color: var(--brand-strong);
+}
+
+.profile-panel__row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: 13px;
+}
+
+.profile-panel__key {
+  color: var(--ink-faint);
+  flex: none;
+}
+
+.profile-panel__value {
+  word-break: break-all;
+  text-align: right;
+}

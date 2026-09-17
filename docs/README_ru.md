@@ -1,184 +1,199 @@
-# whatsapp-api-calls-client Library for JavaScript  
+# whatsapp-api-calls-client Library for JavaScript
 
 ![](https://img.shields.io/badge/license-CC%20BY--ND%204.0-green)
 
-## Поддержка  
+## Поддержка
 
 [![Support](https://img.shields.io/badge/support@green--api.com-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:support@green-api.com)
 [![Support](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/greenapi_support_ru_bot)
 [![Support](https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://wa.me/79993331223)
 
-## Руководства и новости  
+## Руководства и новости
 
 [![Guides](https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white)](https://www.youtube.com/@green-api)
 [![News](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/green_api)
 [![News](https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://whatsapp.com/channel/0029VaHUM5TBA1f7cG29nO1C)
 
-- [Documentation on English](../README.md)  
+- [Documentation on English](../README.md)
 
-Библиотека JavaScript WhatsАpp API Calls Client позволяет легко создавать JavaScript/TypeScript приложения для приема входящих звонков и создания исходящих звонков через WhatsApp через API
-сервиса [green-api.com](https://green-api.com/). Чтобы воспользоваться библиотекой, нужно получить `ID_INSTANCE` и `API_TOKEN_INSTANCE` в [личном кабинете](https://console.green-api.com/). Есть бесплатный тариф инстанса разработчика. 
+Библиотека позволяет принимать и совершать голосовые звонки WhatsApp из JavaScript- или
+TypeScript-приложения через API сервиса [green-api.com](https://green-api.com/). Обмен
+сигнализацией идёт по WebSocket, звук — по WebRTC, поэтому всё работает прямо в браузере и
+ничего доустанавливать рядом не нужно. Чтобы воспользоваться библиотекой, нужно получить
+`ID_INSTANCE` и `API_TOKEN_INSTANCE` в [личном кабинете](https://console.green-api.com/).
+Есть бесплатный тариф инстанса разработчика.
 
+В репозитории лежит готовое клиентское приложение на этой библиотеке — см. ниже. С него и
+стоит начинать: всё описанное в этом документе там применено в работающем виде.
 
-## API
+## React-клиент
 
-API библиотеки основана на WebSockets и WebRTC(Web Real-Time Communication — коммуникация в режиме реального времени) протоколе.  
+`examples/react` — это рабочий софтфон и эталонная реализация для библиотеки.
 
-Плюсы использования WebRTC:
+Он закрывает то, что приложению звонков действительно приходится делать:
 
-* Доступность в браузерах
-* Низкая задержка
-* Контроль перегрузки
-* Обязательное шифрование
- 
-## Установка и импорт библиотеки  
+- **Авторизация** по `idInstance` / `apiTokenInstance`, сохраняется между перезагрузками.
+- **Набор** по номеру телефона — выбор страны, форматирование по ходу ввода — либо по лиду,
+  когда номер собеседника неизвестен.
+- **Контакты** с аватарками и поиском: показаны оба адреса собеседника, звонок прямо из
+  строки.
+- **Входящие звонки**: окно с аватаркой и именем звонящего, приём и отклонение.
+- **Экран звонка**: с кем говорите, сколько длится, индикаторы уровня в обе стороны,
+  отключение микрофона, отбой.
+- **Звуки вызова**: гудки дозвона и рингтон входящего, синтезированные — без звуковых файлов.
+- **Состояние соединения**, включая переподключение прямо посреди звонка.
 
-Библиотека поддерживает только окружение браузера и может быть установлена как с помощью пакетного менеджера, так и без него. 
+### Запуск
 
-**Установка для Webpack и npm приложений:**
+```shell
+cd examples/react
+npm install
+npm run dev
+```
+
+`npm install` нужен только при первой установке. Vite напечатает адрес, на котором поднялся;
+откройте его и войдите с данными из [личного кабинета](https://console.green-api.com/).
+Инстанс при этом должен быть уже авторизован там по QR-коду — библиотека занимается только
+звонками.
+
+### Как устроен
+
+Что смотреть в первую очередь, в порядке прохождения звонка:
+
+| Файл | Что в нём |
+| --- | --- |
+| `src/voip/index.ts` | Единственные клиент и соединение на всё приложение, а также последние потоки и статус связи — чтобы компонент, смонтированный позже, их всё-таки нашёл |
+| `src/hooks/useCallsConnection.ts` | То же соединение в виде состояния React |
+| `src/components/softphone.tsx` | Набор: страна или лид, форматирование, клавиатура |
+| `src/common/address.ts` | Модель адреса — номер и лид это альтернативы, и набирается ровно один из них |
+| `src/components/incoming-call.tsx` | Окно входящего звонка |
+| `src/pages/call.tsx` | Экран звонка: собеседник, таймер, индикаторы, мьют, отбой |
+| `src/hooks/useVoip.ts` | Потоки и проигрывающие их аудиоэлементы, связанные в обе стороны |
+| `src/voip/ringing.ts` | Гудки дозвона и рингтон |
+
+Три вещи там неочевидны по API, и каждая ошибка тихая — ничего не падает, просто не работает:
+
+1. **Сначала сигнализация, потом звук.** `dial()` или `accept()` должны завершиться до
+   `startAudioBridge()`: оффер, не относящийся ни к какому звонку, сервер отклоняет.
+2. **Мост поднимается раньше, чем появляется экран звонка.** К моменту монтирования
+   аудиоэлементов события `local-stream-ready` и `remote-stream-ready` уже отработали, поэтому
+   потоки запоминаются, а не только слушаются. Одной подписки мало — звонок будет беззвучным.
+3. **Мьют локальный, и его надо восстанавливать.** Трек из `local-stream-ready` — тот самый,
+   что добавлен в peer connection, поэтому `track.enabled = false` и есть то, что перестаёт
+   слышать собеседник. После обрыва сокета посреди звонка библиотека поднимает мост заново с
+   **новым** микрофоном и звонок при этом не завершает — мьют, поставленный до обрыва, нужно
+   перенести на новый трек, иначе экран продолжит утверждать то, чего уже нет.
+
+## Установка библиотеки
+
+Библиотека работает и в сборке, и на обычной браузерной странице.
 
 ```shell
 npm i @green-api/whatsapp-api-calls-client-js
 ```
 
-**Импорт библиотеки в проект:**
-
-Для ES6 JavaScript или TypeScript
 ```javascript
 import { GreenApiVoipClient } from '@green-api/whatsapp-api-calls-client-js';
 ```
 
-**Импорт и установка Vanilla JS приложений, добавьте строку в ваш index.html**
-```html
-<script src="https://unpkg.com/@green-api/whatsapp-api-client/lib/whatsapp-api-client.min.js"></script>
-```  
+## Как пользоваться
 
-## Аутентификация  
+Библиотека состоит из двух частей. `GreenApiVoipClient` — обёртка над REST-методами: набрать,
+принять, отклонить, положить трубку. `CallsConnection`, который возвращает `connectCalls()`,
+держит WebSocket: сообщает состояние звонка, объявляет входящие и несёт звук по WebRTC.
 
-Для использования библиотеки вам понадобится учетная запись GREEN-API на сайте [green-api.com](https://green-api.com/en). Пройдите аутентификацю с помощью мобильного приложения WhatsApp. Чтобы зарегистрировать учетную запись, вам необходимо перейти на [панель управления](https://console.green-api.com/). После регистрации вы получите уникальную пару ключей `ID_INSTANCE` и `API_TOKEN_INSTANCE`. Аутентификация мобильного приложения WhatsApp может быть выполнена в [панели управления](https://console.green-api.com/). Вам необходимо будет отсканировать QR-код.
-
-## Примеры  
-
-Класс `GreenApiVoipClient` это EventEmitter класс, который генерирует события, с помощью которыми можно управлять жизненным циклом вызова.  
-
-### Как инициализировать объект  
+### Открыть соединение
 
 ```javascript
 import { GreenApiVoipClient } from '@green-api/whatsapp-api-calls-client-js';
 
-// Инициализация объекта VoipClient  
-const greenApiVoipClient = new GreenApiVoipClient();
-
-// Примеры параметров инициализации, замените их фактическими данными вашего инстанса
-const initOptions = {
+const client = new GreenApiVoipClient({
   idInstance: 'your-id-instance',
   apiTokenInstance: 'your-api-token-instance',
-  apiUrl: 'your-api-url-voip' // обычно https://pool.voip.green-api.com, где pool представляет собой первые 4 символа idInstance
-};
+  apiUrl: 'your-api-url', // адрес API вашего инстанса, например https://1234.api.green-api.com
+});
 
-// Инициализация клиента  
-greenApiVoipClient.init(initOptions).then(() => {
-  console.log('GreenApiVoipClient initialized and connected.');
-}).catch(error => {
-  console.error('Failed to initialize GreenApiVoipClient:', error);
+// Переподключается само. Текущее состояние звонка приходит сразу после подключения и на
+// каждое изменение, поэтому страница, перезагруженная посреди звонка, сразу покажет верное.
+const calls = client.connectCalls();
+
+calls.addEventListener('connect', () => console.log('Соединение установлено.'));
+calls.addEventListener('disconnect', (event) => console.log('Обрыв:', event.detail.reason));
+calls.addEventListener('state', (event) => {
+  const { state, info } = event.detail; // 'idle' | 'inc-call' | 'out-call' | 'on-call'
+  console.log('Состояние звонка:', state, info ?? '');
 });
 ```
 
-### Обработка входящих звонков  
+### Принять звонок
 
 ```javascript
-const callBtns = document.getElementById('initBtns');
-const audioElement = document.createElement('audio'); // Аудио элемент для передачи звукового потока
+const audio = document.querySelector('audio');
 
-// Запустите Event и получайте информацию о звонке из WhatsApp
-greenApiVoipClient.addEventListener('incoming-call', (event) => {
-  console.log(event.detail.info);
+calls.addEventListener('incoming-call', async (event) => {
+  const { id, wid, name } = event.detail;
+  console.log('Входящий звонок от', name || wid);
 
-  // Отобразить кнопки принятия и отклонения вызова
-  const acceptCallBtn = document.createElement('button');
-  const rejectCallBtn = document.createElement('button');
-  
-  acceptCallBtn.addEventListener('click', async () => {
-    await greenApiVoipClient.acceptCall();
-  });
-  
-  rejectCallBtn.addEventListener('click', async () => {
-    await greenApiVoipClient.rejectCall();
-  });
-
-  callBtns.append(acceptCallBtn, rejectCallBtn);
+  // Здесь показывайте своё окно; тут звонок принимается сразу.
+  await client.accept();
+  await calls.startAudioBridge();
 });
 
-greenApiVoipClient.addEventListener('remote-stream-ready', (event) => {
-  // Назначьте удаленному медиапотоку значение из события, чтобы вы могли слышать голос другого участника вызова
-  audioElement.srcObject = event.detail;
+calls.addEventListener('remote-stream-ready', (event) => {
+  audio.srcObject = event.detail;
 });
-```  
+```
 
-### Обработка исходящих звонков  
+### Позвонить
 
 ```javascript
-const callBtn = document.getElementById('call');
-const audioElement = document.getElementById('remote'); // Аудио элемент для передачи звукового потока
+// Номер телефона, chatId вида `79991234567@c.us` либо лид вида `1062110180230@lid`.
+await client.dial('79991234567');
+await calls.startAudioBridge();
+```
 
-callBtn.addEventListener('click', async () => {
-  try {
-    await greenApiVoipClient.startCall('Номер телефона получателя');
-  } catch (err) {
-    console.error(err);
-  }
+Неудача с мостом звонок не отменяет: на сервере он остаётся, и `startAudioBridge()` можно
+вызвать ещё раз. Так же звук возвращают после перезагрузки страницы — если `calls.state.state`
+равно `out-call` или `on-call`, а `calls.hasAudioBridge` — `false`, поднимайте мост без
+повторного набора.
+
+### Завершить звонок
+
+```javascript
+await client.hangUp(); // активный звонок
+await client.reject(); // входящий
+
+calls.addEventListener('end-call', (event) => {
+  const { reason, cause } = event.detail;
+  // reason: 'call-ended' (завершил сервер) либо 'connection-lost'
+  // cause: слово сервера — 'hangup', 'timeout', 'accepted_elsewhere', …
+  console.log('Звонок завершён.', cause ?? '');
 });
-
-greenApiVoipClient.addEventListener('remote-stream-ready', (event) => {
-  // Назначьте удаленному медиапотоку значение из события, чтобы вы могли слышать голос другого участника вызова
-  audioElement.srcObject = event.detail;
-});
-```  
-
-## Демо примеры на Vanilla JS и React:  
-
-Вы можете ознакомиться с нашими демонстрационными примерами по ссылкам ниже:
-
-   * [Vanilla JS](./examples/basic-usage-vanilla-js/)  
-   * [React JS](./examples/react/)  
-
-Скачайте необходимый пример из репозитория по ссылке. После выполните в папке проекта следующие шаги:
-
-```shell
-npm install  
-npm run dev  
-```
-`npm install` достаточно выполнять один раз при первой установке.  
-
-После этого вам станет доступен веб-интерфейс клиента по указанному адресу, например:  
-
-```
- npm run dev
-
-> vite-project@0.0.0 dev
-> vite
-
-  VITE v5.2.11  ready in 969 ms
-
-  ➜  Local:   http://localhost:80/
-  ➜  Network: use --host to expose
-  ➜  press h + enter to show help
 ```
 
-Откройте ссылку в предпочитаемом браузере. Для работы используйте `idInstance` И `apiTokenInstance` из [личного кабинета](https://console.green-api.com/). После авторизации вы можете принимать входящие звонки и совершать исходящие.
+Аудиомост библиотека разбирает сама при завершении звонка. `calls.close()` останавливает мост
+и закрывает сокет, когда звонки больше не нужны.
 
-Для остановки сервера нажмите `Ctrl + C` и затем нажмите кнопку `Y` в вашем терминале.
+## Другие примеры
 
-## Документация  
+- [Vanilla JS](../examples/basic-usage-vanilla-js/) — те же звонки без фреймворка, чтобы
+  посмотреть на API отдельно.
 
-Для более детальной информации ознакомьтесь с нашим ["Пошаговым руководством"](./step-by-step_ru.md).
+Оба примера запускаются одинаково: `npm install`, затем `npm run dev`.
 
-## Сторонние библиотеки  
+## Документация
 
-- [socket.io-client](https://www.npmjs.com/package/socket.io-client) - WebSocket library
-- [freeice](https://www.npmjs.com/package/freeice) - Free random STUN or TURN server for your WebRTC application
+[Пошаговое руководство](./step-by-step_ru.md) проводит через всю интеграцию — от настройки
+проекта до обработки каждого события.
 
+## Сторонние библиотеки
 
-## Лицензия  
+У самой библиотеки нет зависимостей времени выполнения. React-клиент использует
+[React](https://react.dev/), [Redux Toolkit](https://redux-toolkit.js.org/),
+[React Router](https://reactrouter.com/), [Ant Design](https://ant.design/),
+[иконки MUI](https://mui.com/material-ui/material-icons/) и
+[libphonenumber-js](https://www.npmjs.com/package/libphonenumber-js).
 
-Лицензировано на условиях [Creative Commons Attribution-NoDerivatives 4.0 International (CC BY-ND 4.0)](https://creativecommons.org/licenses/by-nd/4.0/).
+## Лицензия
+
+Лицензировано на условиях Creative Commons. Подробности — в файле [LICENSE](../LICENSE).

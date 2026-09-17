@@ -1,11 +1,36 @@
 .header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  background-color: white;
-  border-bottom: 1px solid rgba(5, 5, 5, 0.06);
+  justify-content: space-between;
+  gap: var(--space-4);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: saturate(160%) blur(12px);
+  border-bottom: 1px solid var(--line);
 }
 
-.header a {
-  font-weight: lighter;
+.header__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-muted);
+}
+
+/* Own account lives in the corner, as a face rather than a word: it is the one control
+   that is always there, and it should not read as part of the task. */
+.header__profile {
+  border: none;
+  background: transparent;
+  padding: 2px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  transition: box-shadow 0.16s ease;
+}
+
+.header__profile:hover,
+.header__profile:focus-visible {
+  box-shadow: 0 0 0 2px var(--brand-soft), 0 0 0 3px var(--brand);
+  outline: none;
 }

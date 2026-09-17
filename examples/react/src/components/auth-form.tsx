@@ -35,30 +35,30 @@ const AuthForm: FC = () => {
 
         case StateInstanceEnum.Blocked:
           return notification.warning({
-            message: 'Предупреждение',
-            description: 'Аккаунт забанен',
+            message: 'Warning',
+            description: 'This account is banned',
             duration: 4,
           });
 
         case StateInstanceEnum.NotAuthorized:
           return notification.warning({
-            message: 'Предупреждение',
-            description: 'Аккаунт не авторизован',
+            message: 'Warning',
+            description: 'This account is not authorized',
             duration: 4,
           });
 
         case StateInstanceEnum.Starting:
           return notification.warning({
-            message: 'Предупреждение',
-            description: 'Аккаунт в процессе запуске',
+            message: 'Warning',
+            description: 'This account is still starting up',
             duration: 4,
           });
 
         case StateInstanceEnum.YellowCard:
           return notification.warning({
-            message: 'Предупреждение',
+            message: 'Warning',
             description:
-              'На аккаунте частично или полностью приостановлена отправка сообщений из-за спамерской активности',
+              'Sending messages from this account is partially or fully suspended because of spam activity',
             duration: 4,
           });
       }
@@ -66,7 +66,7 @@ const AuthForm: FC = () => {
 
     if (error) {
       notification.error({
-        message: 'Произошла ошибка!',
+        message: 'Something went wrong',
         description: getErrorMessage(error),
         duration: 4,
       });
@@ -74,53 +74,63 @@ const AuthForm: FC = () => {
   };
 
   return (
-    <Card className="form-card">
-      <Form name="auth-form" size="large" onFinish={onSignIn} form={form}>
-        <Form.Item
-          name="apiUrl"
-          hasFeedback
-          initialValue={apiUrl}
-          rules={[
-            { required: true, message: 'apiUrl не может быть пустым!' },
-            { whitespace: true, message: 'apiUrl не может быть пустым!' },
-          ]}
-        >
-          <Input placeholder="apiUrl" autoComplete="off" />
-        </Form.Item>
-        <Form.Item
-          name="idInstance"
-          hasFeedback
-          initialValue={idInstance}
-          rules={[
-            { required: true, message: 'idInstance не может быть пустым!' },
-            { whitespace: true, message: 'idInstance не может быть пустым!' },
-          ]}
-        >
-          <Input placeholder="idInstance" autoComplete="off" />
-        </Form.Item>
-        <Form.Item
-          name="apiTokenInstance"
-          hasFeedback
-          initialValue={apiTokenInstance}
-          rules={[
-            { required: true, message: 'apiTokenInstance не может быть пустым!' },
-            { whitespace: true, message: 'apiTokenInstance не может быть пустым!' },
-          ]}
-        >
-          <Input placeholder="apiTokenInstance" autoComplete="off" />
-        </Form.Item>
-        <Form.Item>
-          <Button
-            type="primary"
-            htmlType="submit"
-            className="login-form-button"
-            loading={isLoading}
+    <div className="auth-screen">
+      <Card className="form-card">
+        <div className="form-card__title">Sign in</div>
+        <div className="form-card__hint">
+          The instance must already be authorized — this demo only places and answers calls.
+        </div>
+        <Form name="auth-form" size="large" layout="vertical" onFinish={onSignIn} form={form}>
+          <Form.Item
+            name="apiUrl"
+            label="API URL"
+            hasFeedback
+            initialValue={apiUrl}
+            rules={[
+              { required: true, message: 'apiUrl is required' },
+              { whitespace: true, message: 'apiUrl is required' },
+            ]}
           >
-            Войти
-          </Button>
-        </Form.Item>
-      </Form>
-    </Card>
+            <Input placeholder="https://1103.api.green-api.com" autoComplete="off" />
+          </Form.Item>
+          <Form.Item
+            name="idInstance"
+            label="Instance ID"
+            hasFeedback
+            initialValue={idInstance}
+            rules={[
+              { required: true, message: 'idInstance is required' },
+              { whitespace: true, message: 'idInstance is required' },
+            ]}
+          >
+            <Input placeholder="1103000000" autoComplete="off" />
+          </Form.Item>
+          <Form.Item
+            name="apiTokenInstance"
+            label="API token"
+            hasFeedback
+            initialValue={apiTokenInstance}
+            rules={[
+              { required: true, message: 'apiTokenInstance is required' },
+              { whitespace: true, message: 'apiTokenInstance is required' },
+            ]}
+          >
+            {/* A token is a credential: shown only when its owner asks to see it. */}
+            <Input.Password placeholder="Instance API token" autoComplete="off" />
+          </Form.Item>
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="login-form-button"
+              loading={isLoading}
+            >
+              Sign in
+            </Button>
+          </Form.Item>
+        </Form>
+      </Card>
+    </div>
   );
 };
 

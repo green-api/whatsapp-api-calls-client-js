@@ -4,60 +4,73 @@ import { ConfigProvider, notification } from 'antd';
 import { RouterProvider } from 'react-router-dom';
 
 import 'App.css';
-import { Actions, SocketDisconnectPayload, THEME } from 'common';
+import { THEME } from 'common';
 import { useAppSelector } from 'hooks/redux';
 import { useActions } from 'hooks/useActions';
+import { useCallsConnection } from 'hooks/useCallsConnection';
 import router from 'router';
 import { selectAuth, selectCredentials } from 'store/slices/user-slice';
-import { voipClient } from 'voip';
+import { closeVoip, getConnectionStatus, openVoip } from 'voip';
 
 const App: FC = () => {
   const { idInstance, apiTokenInstance, apiUrl } = useAppSelector(selectCredentials);
   const auth = useAppSelector(selectAuth);
 
   const { setSocketConnectionInfo } = useActions();
+  const connection = useCallsConnection();
 
-  // auth handler
+  // Opens the calls connection once the credentials are known. The library takes them in
+  // its constructor, so this is also what creates the client.
   useEffect(() => {
     document.documentElement.classList.add('default-theme');
 
-    (async () => {
-      if (idInstance && apiTokenInstance && apiUrl && auth) {
-        try {
-          await voipClient.init({ idInstance, apiTokenInstance, apiUrl });
-        } catch (err) {
-          notification.error({
-            message: 'Произошла ошибка!',
-            description: (err as Error).message,
-            duration: 10,
-          });
-        }
-      }
-    })();
-  }, [auth, idInstance, apiTokenInstance]);
+    if (!idInstance || !apiTokenInstance || !apiUrl || !auth) {
+      closeVoip();
 
-  // socket  connection status handler
-  useEffect(() => {
-    const socketConnectHandler = () => {
-      setSocketConnectionInfo({ connected: true });
-    };
+      return;
+    }
 
-    const socketDisconnectHandler = (event: CustomEvent<SocketDisconnectPayload>) => {
-      setSocketConnectionInfo({
-        connected: false,
-        reason: event.detail.reason,
-        details: event.detail.details,
+    try {
+      openVoip({ idInstance, apiTokenInstance, apiUrl });
+    } catch (err) {
+      notification.error({
+        message: 'Something went wrong',
+        description: (err as Error).message,
+        duration: 10,
       });
+    }
+  }, [auth, idInstance, apiTokenInstance, apiUrl]);
+
+  // Connection status. `permanent` means the server refused rather than the link dropping:
+  // reconnecting will not help, and the reason is worth showing rather than retrying.
+  useEffect(() => {
+    if (!connection) {
+      setSocketConnectionInfo({ connected: false });
+
+      return;
+    }
+
+    const onConnect = () => setSocketConnectionInfo({ connected: true });
+
+    const onDisconnect = (event: Event) => {
+      const { reason, permanent } = (event as CustomEvent<{ reason: string; permanent?: boolean }>)
+        .detail;
+
+      setSocketConnectionInfo({ connected: false, reason, permanent });
     };
 
-    voipClient.addEventListener(Actions.SOCKET_CONNECT, socketConnectHandler);
-    voipClient.addEventListener(Actions.SOCKET_DISCONNECT, socketDisconnectHandler);
+    connection.addEventListener('connect', onConnect);
+    connection.addEventListener('disconnect', onDisconnect);
+
+    // The socket may already be up: its `connect` fired while this effect was still being
+    // scheduled, and subscribing alone would leave the app claiming to be offline.
+    setSocketConnectionInfo(getConnectionStatus());
 
     return () => {
-      voipClient.removeEventListener(Actions.SOCKET_CONNECT, socketConnectHandler);
-      voipClient.removeEventListener(Actions.SOCKET_DISCONNECT, socketDisconnectHandler);
+      connection.removeEventListener('connect', onConnect);
+      connection.removeEventListener('disconnect', onDisconnect);
     };
-  }, []);
+  }, [connection]);
 
   return (
     <ConfigProvider theme={THEME}>

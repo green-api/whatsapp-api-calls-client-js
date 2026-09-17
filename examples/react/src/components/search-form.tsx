@@ -14,17 +14,35 @@ const SearchForm = ({
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    if (searchTerm) {
-      const filteredList = list.filter(
-        (item) =>
-          item.contactName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.id?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      onSearch(filteredList);
-    } else {
+    if (!searchTerm) {
       onSearch(list);
+
+      return;
     }
+
+    const term = searchTerm.toLowerCase();
+    // A row shows its address spaced and plussed, so a search for what is on screen has to
+    // survive that: both sides drop to bare digits before they are compared.
+    const digits = searchTerm.replace(/\D/g, '');
+
+    onSearch(
+      list.filter((item) => {
+        if (
+          item.contactName?.toLowerCase().includes(term) ||
+          item.name?.toLowerCase().includes(term)
+        ) {
+          return true;
+        }
+
+        // Both addresses, because a row shows both: searching for the LID printed on screen
+        // has to find the row that prints it.
+        const addresses = [item.id, item.lid].filter(Boolean) as string[];
+
+        return digits
+          ? addresses.some((address) => address.replace(/\D/g, '').includes(digits))
+          : addresses.some((address) => address.toLowerCase().includes(term));
+      })
+    );
   }, [searchTerm, onSearch, list]);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -35,7 +53,7 @@ const SearchForm = ({
     <Flex justify="space-between" style={{ marginBottom: '20px' }}>
       <Flex flex="1">
         <Input
-          placeholder="Введите текст для поиска"
+          placeholder="Search"
           value={searchTerm}
           onChange={handleChange}
           style={{ marginRight: '10px' }}

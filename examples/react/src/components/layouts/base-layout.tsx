@@ -1,15 +1,17 @@
-import { FC, useEffect } from 'react';
+import { FC, useEffect, useState } from 'react';
 
-import { Button, Descriptions, Flex, Layout, notification } from 'antd';
+import { CallInfo, CallState } from '@green-api/whatsapp-api-calls-client-js';
+import { Layout, notification } from 'antd';
 import { Outlet, useNavigate } from 'react-router-dom';
 
-import { Actions, IncomingCallPayload } from 'common';
 import Header from 'components/header';
+import IncomingCall from 'components/incoming-call';
 import { useAppSelector } from 'hooks/redux';
 import { useActions } from 'hooks/useActions';
+import { useCallsConnection } from 'hooks/useCallsConnection';
 import { Routes } from 'router/routes';
 import { selectAuth, selectCredentials } from 'store/slices/user-slice';
-import { voipClient } from 'voip';
+import { getClient } from 'voip';
 
 const BaseLayout: FC = () => {
   const { idInstance, apiTokenInstance, apiUrl } = useAppSelector(selectCredentials);
@@ -18,6 +20,9 @@ const BaseLayout: FC = () => {
   const navigate = useNavigate();
 
   const { setHasActiveCall } = useActions();
+  const connection = useCallsConnection();
+
+  const [incoming, setIncoming] = useState<CallInfo | null>(null);
 
   useEffect(() => {
     if (!isAuth || !idInstance || !apiTokenInstance || !apiUrl) {
@@ -25,78 +30,69 @@ const BaseLayout: FC = () => {
     }
   }, [isAuth, navigate]);
 
-  // incoming call handler
-
   useEffect(() => {
-    const onAccept = async () => {
-      try {
-        await voipClient.acceptCall();
+    if (!connection) {
+      return;
+    }
 
-        console.log(idInstance);
-        setHasActiveCall(true);
-        navigate(`/call/${idInstance}`);
-        notification.destroy('test');
-      } catch (err) {
-        notification.error({
-          message: 'Произошла ошибка!',
-          description: (err as Error).message,
-          duration: 10,
-        });
+    const onIncoming = (event: Event) => setIncoming((event as CustomEvent<CallInfo>).detail);
+
+    // The caller gave up, or another device answered: the prompt has to go by itself, or it
+    // would sit there offering a call that no longer exists.
+    const onEnded = () => setIncoming(null);
+
+    const onState = (event: Event) => {
+      const state = (event as CustomEvent<CallState>).detail;
+
+      if (state.state !== 'inc-call') {
+        setIncoming(null);
       }
     };
 
-    const onReject = async () => {
-      try {
-        await voipClient.rejectCall();
-        notification.destroy('test');
-      } catch (err) {
-        notification.error({
-          message: 'Произошла ошибка!',
-          description: (err as Error).message,
-          duration: 10,
-        });
-      }
-    };
+    connection.addEventListener('incoming-call', onIncoming);
+    connection.addEventListener('end-call', onEnded);
+    connection.addEventListener('state', onState);
 
-    const incomingCallHandler = (event: CustomEvent<IncomingCallPayload>) => {
-      const payload = event.detail;
-
-      const description = (
-        <Flex wrap="wrap" gap="small">
-          <Descriptions
-            size="small"
-            items={[
-              {
-                key: '1',
-                label: 'От',
-                children: `${event.detail.info.wid.user || 'Неизвестный номер'}`,
-              },
-            ]}
-          />
-          <Button type="primary" onClick={onAccept}>
-            Принять
-          </Button>
-          <Button type="primary" onClick={onReject} danger>
-            Отклонить
-          </Button>
-        </Flex>
-      );
-
-      notification.info({
-        key: 'test',
-        placement: 'top',
-        message: 'Входящий звонок',
-        description,
-        duration: payload.timeout,
-      });
-      console.log('incomingCall');
-    };
-
-    voipClient.addEventListener(Actions.INCOMING_CALL, incomingCallHandler);
     return () => {
-      voipClient.removeEventListener(Actions.INCOMING_CALL, incomingCallHandler);
+      connection.removeEventListener('incoming-call', onIncoming);
+      connection.removeEventListener('end-call', onEnded);
+      connection.removeEventListener('state', onState);
     };
-  }, [idInstance]);
+  }, [connection]);
+
+  // Answering is two steps: accept tells the server, and the audio bridge is what actually
+  // carries the sound. Signalling comes first — an offer without a call is refused.
+  const onAccept = async () => {
+    setIncoming(null);
+
+    try {
+      await getClient().accept();
+      await connection?.startAudioBridge();
+
+      setHasActiveCall(true);
+      navigate(`/call/${idInstance}`);
+    } catch (err) {
+      notification.error({
+        message: 'Something went wrong',
+        description: (err as Error).message,
+        duration: 10,
+      });
+    }
+  };
+
+  const onReject = async () => {
+    setIncoming(null);
+
+    try {
+      await getClient().reject();
+    } catch (err) {
+      notification.error({
+        message: 'Something went wrong',
+        description: (err as Error).message,
+        duration: 10,
+      });
+    }
+  };
 
   return (
     <Layout className="app">
@@ -104,6 +100,7 @@ const BaseLayout: FC = () => {
       <Layout.Content>
         <Outlet />
       </Layout.Content>
+      {incoming && <IncomingCall info={incoming} onAccept={onAccept} onReject={onReject} />}
     </Layout>
   );
 };

@@ -8,6 +8,7 @@
 * [Configuring browser environment](#Configuring-browser-environment)
 * [Setting up Green-API instance ](#Setting-up-Green-API-instance)
 * [Creating the Main File: Integrating WhatsApp Voice Calls](#creating-the-main-file-integrating-whatsapp-voice-calls)
+* [The same thing in the React client](#the-same-thing-in-the-react-client)
 * [Conclusion](#Conclusion)
 
 ## Introduction  
@@ -443,6 +444,69 @@ try {
 ```
 
 When you are done with calls altogether, `calls.close()` stops the bridge and closes the WebSocket. `client.getCallState()` returns the current state over REST if you need it outside the connection.
+
+## The same thing in the React client
+
+Everything above is a handful of listeners on one page. A real application has more than one
+page, and that is where the parts that look like details start to matter. The React client in
+[`examples/react`](../examples/react/) is that application, and it is worth reading next.
+
+### One client for the whole app
+
+The library takes credentials in its constructor, so the client cannot exist before the user
+has signed in — and a re-render must not open a second socket. In the example both live in
+[`src/voip/index.ts`](../examples/react/src/voip/index.ts), outside the component tree:
+opening is idempotent, and components subscribe to the connection rather than create one.
+
+### What has already happened by the time a component mounts
+
+`dial()` and `accept()` are awaited, then `startAudioBridge()`, and only then does the app
+navigate to the call screen. So by the time the audio elements exist, `local-stream-ready`
+and `remote-stream-ready` have already fired. A component that only subscribes to them hears
+nothing at all — the events are gone.
+
+The module therefore remembers the last streams and hands them to whoever asks
+(`getMediaStreams()`), and [`src/hooks/useVoip.ts`](../examples/react/src/hooks/useVoip.ts)
+wires both directions: a stream arriving for an element already on screen is attached at once,
+and an element mounting later picks up the stream it was waiting for. The same applies to the
+connection status — subscribing after `connect` has fired would leave the app claiming to be
+offline while it is perfectly connected.
+
+### Muting the microphone
+
+The library has no mute, and needs none. The track it hands out with `local-stream-ready` is
+the one it adds to the peer connection, so disabling it is what the peer stops hearing:
+
+```javascript
+stream.getAudioTracks().forEach((track) => { track.enabled = false; });
+```
+
+Two things to get right, both of them in
+[`src/voip/index.ts`](../examples/react/src/voip/index.ts):
+
+* **A reconnect replaces the microphone.** If the socket drops while the bridge is up, the
+  library tears the bridge down, waits for the socket, and raises it again — a new
+  `getUserMedia`, a new track, and no `end-call` in between, because the call never ended.
+  The new track comes enabled. Re-apply the mute to it, or the microphone quietly goes live
+  again while the button still says muted.
+* **A stopped track is not a microphone.** Tracks stopped by that teardown stay in the
+  stream, so counting them is not the same as having one. Check `track.readyState === 'live'`
+  before reporting that a mute took effect.
+
+### Telling the user who is calling
+
+A call carries a `wid` — `79991234567@c.us` for a phone number, or `1062110180230@lid` for a
+peer whose number you do not have. `info.name` is filled only when WhatsApp has a pushname,
+which for a LID it usually does not.
+
+`getContacts` returns both addresses for the same person (`id` and `lid`), so a contact can be
+matched from either — which is how
+[`src/pages/call.tsx`](../examples/react/src/pages/call.tsx) puts a name to a caller that
+arrived as bare digits. The address model itself is in
+[`src/common/address.ts`](../examples/react/src/common/address.ts): a number and a LID are
+alternatives, one of them is what gets dialled, and a number is resolved against its country
+rather than glued to a dial code — otherwise a trunk prefix such as `8` in Russia or `0` in
+the UK survives into the dialled address and reaches someone else.
 
 ### Conclusion  
 

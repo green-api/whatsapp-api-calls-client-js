@@ -1,18 +1,33 @@
-.statusCircle {
-  display: block;
-  width: 10px;
-  height: 10px;
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--ink-muted);
+  width: fit-content;
+}
+
+.status-pill__dot {
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  box-shadow: 0 0 5px 1px currentColor;
-  margin: 0 4px;
+  background: var(--ink-faint);
 }
 
-.statusCircle__auth {
-  background: #4CAE4FFF;
-  color: #4CAE4FFF;
+.status-pill__dot--on {
+  background: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-soft);
 }
 
-.statusCircle__notAuth {
-  background: rgb(255, 39, 39);
-  color: rgb(255, 39, 39);
+.status-pill__dot--off {
+  background: var(--danger);
+  box-shadow: 0 0 0 3px var(--danger-soft);
+}
+
+.status-pill__note {
+  color: var(--ink-faint);
 }
