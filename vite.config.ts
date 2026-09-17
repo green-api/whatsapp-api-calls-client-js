@@ -9,7 +9,10 @@ export default defineConfig({
   plugins: [
     tsconfigPaths(),
     dts({
-      rollupTypes: true,
+      // One self-contained `lib/index.d.ts` instead of a tree of files that reference each
+      // other. The option was called `rollupTypes` before vite-plugin-dts 5; the old name is
+      // accepted silently and does nothing, which is how a barrel ends up shipped by mistake.
+      bundleTypes: true,
     }),
   ],
   build: {

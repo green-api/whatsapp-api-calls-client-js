@@ -9,8 +9,8 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "vite": "^5.2.0",
-    "vite-tsconfig-paths": "^4.3.2"
+    "vite": "^7.3.6",
+    "vite-tsconfig-paths": "^5.1.4"
   },
   "dependencies": {
     "@green-api/whatsapp-api-calls-client-js": "file:.."
