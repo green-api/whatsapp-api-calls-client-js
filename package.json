@@ -2,6 +2,7 @@
   "name": "@green-api/whatsapp-api-calls-client-js",
   "private": true,
   "version": "2.0.0",
+  "license": "MIT",
   "type": "module",
   "main": "lib/build.js",
   "types": "lib/index.d.ts",

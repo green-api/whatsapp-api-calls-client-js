@@ -196,4 +196,4 @@ calls.addEventListener('end-call', (event) => {
 
 ## Лицензия
 
-Лицензировано на условиях Creative Commons. Подробности — в файле [LICENSE](../LICENSE).
+Лицензировано на условиях лицензии MIT. Подробности — в файле [LICENSE](../LICENSE).

@@ -200,4 +200,4 @@ The library itself has no runtime dependencies. The React client uses
 
 ## License
 
-Licensed under the Creative Commons License. For additional information, see [LICENSE](LICENSE).
+Licensed under the MIT License. For additional information, see [LICENSE](LICENSE).
